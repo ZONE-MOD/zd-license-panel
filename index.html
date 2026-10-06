@@ -87,6 +87,15 @@ font-size:11px;transform:translateY(18px);opacity:0;pointer-events:none;transiti
 @media(max-width:1050px){.grid{grid-template-columns:1fr}.key-card{grid-template-columns:1.2fr .7fr auto}.metric:nth-child(3){display:none}}
 @media(max-width:720px){.app{padding:14px}.topbar{align-items:flex-start}.top-actions .pill{display:none}.hero-row{flex-direction:column}.stats{grid-template-columns:1fr 1fr}.key-card{grid-template-columns:1fr;gap:10px}.actions{justify-content:stretch}.actions .btn{flex:1}.search{width:150px}.form-grid{grid-template-columns:1fr}.range-row{grid-template-columns:1fr}.device-table{font-size:9px}}
 .adminbar{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:16px;padding:13px 15px}.adminbar-actions{display:flex;gap:8px;min-width:320px}.adminbar input{flex:1;background:#080d18;color:#f9fbff;border:1px solid var(--line);outline:none;border-radius:12px;padding:10px 12px}.adminbar input::placeholder{color:#65708a}@media(max-width:720px){.adminbar{align-items:stretch;flex-direction:column}.adminbar-actions{min-width:0}.adminbar-actions .primary{min-width:82px}}
+
+.locked-shell{display:none}
+.auth-screen{max-width:560px;margin:70px auto 0;padding:28px;text-align:center}
+.auth-screen h2{margin:0 0 8px;font-size:24px}
+.auth-screen p{margin:0 0 18px;color:var(--muted);font-size:12px}
+.auth-screen .auth-row{display:flex;gap:8px}
+.auth-screen input{flex:1;background:#080d18;color:#f9fbff;border:1px solid var(--line);outline:none;border-radius:12px;padding:12px}
+.auth-screen .primary{min-width:90px}
+@media(max-width:720px){.auth-screen{margin-top:35px}.auth-screen .auth-row{flex-direction:column}}
 </style>
 </head>
 <body>
@@ -136,6 +145,7 @@ font-size:11px;transform:translateY(18px);opacity:0;pointer-events:none;transiti
       <div id="allDevices" class="devices"></div>
     </aside>
   </main>
+    </div>
 </div>
 
 <div class="modal-backdrop" id="keyModal">
@@ -172,13 +182,11 @@ font-size:11px;transform:translateY(18px);opacity:0;pointer-events:none;transiti
 
 <script>
 const API_URL = "https://zd-license-api.amyratfy8.workers.dev";
-let keys = [];
-let devices = [];
-let nextId = 1;
+let keys = [], devices = [];
 const $=id=>document.getElementById(id);
 
-function token(){return sessionStorage.getItem("zd_admin_token") || $("adminToken").value.trim()}
-function headers(){const t=token();return {"Content-Type":"application/json","X-Admin-Token":t}}
+function token(){return sessionStorage.getItem("zd_admin_token") || ""}
+function headers(){const t=token();return {"Content-Type":"application/json","X-Admin-Token":t,"Authorization":"Bearer "+t}}
 async function api(path, options={}){
   const response=await fetch(API_URL+path,{...options,headers:{...headers(),...(options.headers||{})}});
   let data=null; try{data=await response.json()}catch{}
@@ -186,17 +194,29 @@ async function api(path, options={}){
   return data;
 }
 function normalizeKeys(rows){return (rows||[]).map(k=>({id:k.id,code:k.code,seats:Number(k.seats||1),status:k.status,created:Number(k.created_at),expires:Number(k.expires_at),devices:devices.filter(d=>Number(d.key_id)===Number(k.id))}))}
-function normalizeDevices(rows){return (rows||[]).map(d=>({id:String(d.id),name:d.name||"دستگاه",ip:"—",ua:d.platform||"unknown",connected:Number(d.last_seen_at||0),banned:Boolean(d.banned),key_id:d.key_id,key:d.key_code||"",short:d.device_short||""}))}
+function normalizeDevices(rows){return (rows||[]).map(d=>({id:String(d.id),name:d.device_name||"دستگاه",ip:d.ip||"—",ua:d.platform||"unknown",connected:Number(d.connected_at||0),banned:Boolean(d.banned),key_id:d.key_id,key:d.key_code||"",short:String(d.id)}))}
 async function loadData(){
   const [kr,dr]=await Promise.all([api("/api/keys"),api("/api/devices")]);
-  devices=normalizeDevices(dr.devices); keys=normalizeKeys(kr.keys); nextId=Math.max(0,...keys.map(k=>Number(k.id)))+1; renderAll();
+  devices=normalizeDevices(dr.devices||[]); keys=normalizeKeys(kr.keys||[]); renderAll();
 }
 async function connectPanel(){
   const t=$("adminToken").value.trim(); if(!t){toast("Admin Token را وارد کنید");return}
   sessionStorage.setItem("zd_admin_token",t);
-  try{await loadData();toast("اتصال با موفقیت برقرار شد")}catch(e){sessionStorage.removeItem("zd_admin_token");toast("خطا در اتصال: "+e.message)}
+  try{
+    await loadData();
+    $("authScreen").style.display="none";
+    $("lockedShell").style.display="block";
+    toast("ورود با موفقیت انجام شد");
+  }catch(e){
+    sessionStorage.removeItem("zd_admin_token");
+    toast("خطا در اتصال: "+e.message);
+  }
 }
-async function refreshData(){try{await loadData()}catch(e){toast("خطا در دریافت اطلاعات: "+e.message)}}
+function logoutPanel(){
+  sessionStorage.removeItem("zd_admin_token");
+  location.reload();
+}
+async function refreshData(){try{await loadData();toast("اطلاعات به‌روزرسانی شد")}catch(e){toast("خطا: "+e.message)}}
 function fmtDate(ts){return new Date(ts).toLocaleString("fa-IR",{year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"})}
 function fmtRemain(ts){const m=Math.max(0,ts-Date.now()),d=Math.floor(m/86400000),h=Math.floor(m%86400000/3600000),n=Math.floor(m%3600000/60000);return `${d} روز ${h} ساعت ${n} دقیقه`}
 function isActive(k){return k.status==="active" && k.expires>Date.now()}
@@ -213,7 +233,7 @@ function renderKeys(){
 function renderDevices(){
  const box=$("allDevices"),all=devices.slice().sort((a,b)=>b.connected-a.connected);
  if(!all.length){box.innerHTML='<div class="empty">هنوز دستگاهی متصل نشده است.</div>';return}
- box.innerHTML=all.slice(0,12).map(d=>`<div class="device ${d.banned?'banned':''}><div class="dev-left"><div class="device-icon">${deviceSvg(d.ua)}</div><div><div class="dev-name">${esc(d.name)}</div><div class="dev-sub">${esc(d.key)} • ${fmtDate(d.connected)} • ${esc(d.short||'')}</div></div></div><button class="btn mini ${d.banned?'':'danger'}" onclick="toggleBan('${escAttr(d.id)}')">${d.banned?'رفع بن':'بن دستگاه'}</button></div>`).join("");
+ box.innerHTML=all.slice(0,12).map(d=>`<div class="device ${d.banned?'banned':''}"><div class="dev-left"><div class="device-icon">${deviceSvg(d.ua)}</div><div><div class="dev-name">${esc(d.name)}</div><div class="dev-sub">${esc(d.key)} • ${fmtDate(d.connected)} • ${esc(d.ip)}</div></div></div><button class="btn mini ${d.banned?'':'danger'}" onclick="toggleBan('${escAttr(d.id)}')">${d.banned?'رفع بن':'بن دستگاه'}</button></div>`).join("");
 }
 function renderAll(){renderStats();renderKeys();renderDevices()}
 function openKeyModal(){["editingId","keyCode"].forEach(id=>$(id).value="");$("seats").value=1;$("days").value=30;$("hours").value=0;$("minutes").value=0;$("status").value="active";$("keyModalTitle").textContent="ساخت کلید";openModal("keyModal")}
@@ -230,7 +250,7 @@ async function saveKey(){
 async function revokeKey(id){try{const k=keys.find(x=>x.id===id);if(!k)return;await api(`/api/keys/${id}/revoke`,{method:"POST",body:JSON.stringify({revoked:k.status!=="revoked"})});await loadData();toast(k.status!=="revoked"?"کلید باطل شد":"کلید دوباره فعال شد")}catch(e){toast("خطا: "+e.message)}}
 function showDetails(id){
  const k=keys.find(x=>x.id===id);if(!k)return;const ds=devices.filter(d=>Number(d.key_id)===Number(k.id));
- $("detailBody").innerHTML=`<div class="detail-head"><div><div class="detail-key">${esc(k.code)}</div><div class="muted" style="font-size:10px;margin-top:5px">${isActive(k)?'کلید فعال':'کلید غیرفعال'} • ${fmtRemain(k.expires)} باقی‌مانده</div></div><div class="tag ${isActive(k)?'live':'rev'}">${ds.filter(d=>!d.banned).length} / ${k.seats} کاربر</div></div><div style="overflow:auto"><table class="device-table"><thead><tr><th>دستگاه</th><th>سیستم</th><th>شناسه</th><th>آخرین اتصال</th><th>وضعیت</th><th></th></tr></thead><tbody>${ds.length?ds.map(d=>`<tr><td>${esc(d.name)}</td><td>${esc(d.ua)}</td><td dir="ltr">${esc(d.short||d.id)}</td><td>${fmtDate(d.connected)}</td><td><span class="status-badge ${d.banned?'off':'on'}">${d.banned?'بن شده':'مجاز'}</span></td><td><button class="btn mini ${d.banned?'':'danger'}" onclick="toggleBan('${escAttr(d.id)}');showDetails(${k.id})">${d.banned?'رفع بن':'بن'}</button></td></tr>`).join(""):'<tr><td colspan="6" style="text-align:center;color:#7e8aa4;padding:28px">هنوز دستگاهی به این کلید متصل نشده است.</td></tr>'}</tbody></table></div><div class="form-actions"><button class="btn danger" onclick="revokeKey(${k.id});showDetails(${k.id})">${k.status==="revoked"?'فعال‌سازی کلید':'باطل کردن کلید'}</button><button class="primary" onclick="editKey(${k.id});closeModal('detailModal')">ویرایش کلید</button></div>`;openModal("detailModal")
+ $("detailBody").innerHTML=`<div class="detail-head"><div><div class="detail-key">${esc(k.code)}</div><div class="muted" style="font-size:10px;margin-top:5px">${isActive(k)?'کلید فعال':'کلید غیرفعال'} • ${fmtRemain(k.expires)} باقی‌مانده</div></div><div class="tag ${isActive(k)?'live':'rev'}">${ds.filter(d=>!d.banned).length} / ${k.seats} کاربر</div></div><div style="overflow:auto"><table class="device-table"><thead><tr><th>دستگاه</th><th>سیستم</th><th>IP</th><th>آخرین اتصال</th><th>وضعیت</th><th></th></tr></thead><tbody>${ds.length?ds.map(d=>`<tr><td>${esc(d.name)}</td><td>${esc(d.ua)}</td><td dir="ltr">${esc(d.ip)}</td><td>${fmtDate(d.connected)}</td><td><span class="status-badge ${d.banned?'off':'on'}">${d.banned?'بن شده':'مجاز'}</span></td><td><button class="btn mini ${d.banned?'':'danger'}" onclick="toggleBan('${escAttr(d.id)}');showDetails(${k.id})">${d.banned?'رفع بن':'بن'}</button></td></tr>`).join(""):'<tr><td colspan="6" style="text-align:center;color:#7e8aa4;padding:28px">هنوز دستگاهی به این کلید متصل نشده است.</td></tr>'}</tbody></table></div><div class="form-actions"><button class="btn danger" onclick="revokeKey(${k.id});showDetails(${k.id})">${k.status==="revoked"?'فعال‌سازی کلید':'باطل کردن کلید'}</button><button class="primary" onclick="editKey(${k.id});closeModal('detailModal')">ویرایش کلید</button></div>`;openModal("detailModal")
 }
 async function toggleBan(deviceId){try{const d=devices.find(x=>String(x.id)===String(deviceId));if(!d)return;await api(`/api/devices/${deviceId}`,{method:"PATCH",body:JSON.stringify({banned:!d.banned})});await loadData();toast(d.banned?"دستگاه از بن خارج شد":"دستگاه بن شد")}catch(e){toast("خطا: "+e.message)}}
 function step(id,delta){const el=$(id),min=+(el.min||0),max=+(el.max||999999);el.value=Math.min(max,Math.max(min,(+el.value||0)+delta))}
@@ -238,10 +258,17 @@ function openModal(id){$(id).classList.add("open")}
 function closeModal(id){$(id).classList.remove("open")}
 function toast(msg){const t=$("toast");t.textContent=msg;t.classList.add("show");clearTimeout(window.__toast);window.__toast=setTimeout(()=>t.classList.remove("show"),2600)}
 function esc(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
-function escAttr(s){return String(s).replace(/'/g,"\'")}
+function escAttr(s){return String(s).replace(/'/g,"\\'")}
 function deviceSvg(ua){if(/Android/i.test(ua))return '<svg viewBox="0 0 24 24"><path d="M7 9h10v9a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V9Zm2-2 1-2m3 2-1-2M5 10v6m14-6v6"/></svg>';if(/iOS|iPhone/i.test(ua))return '<svg viewBox="0 0 24 24"><rect x="7" y="3" width="10" height="18" rx="2"/><path d="M10 18h4"/></svg>';return '<svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="11" rx="1.5"/><path d="M8 20h8m-4-4v4"/></svg>'}
 document.querySelectorAll(".modal-backdrop").forEach(b=>b.addEventListener("click",e=>{if(e.target===b)b.classList.remove("open")}));
-const saved=sessionStorage.getItem("zd_admin_token");if(saved){$("adminToken").value=saved;loadData().catch(()=>{})}renderAll();setInterval(renderStats,1000);
+const saved=sessionStorage.getItem("zd_admin_token");
+if(saved){$("adminToken").value=saved;loadData().then(()=>{$("authScreen").style.display="none";$("lockedShell").style.display="block"}).catch(()=>{sessionStorage.removeItem("zd_admin_token")})}
+renderAll();setInterval(renderStats,1000);
+
 </script>
 </body>
-</html>
+</html      <div class="adminbar panel">
+        <div><b>اتصال پنل</b><div class="muted">پنل متصل و احراز هویت شده است</div></div>
+        <div class="adminbar-actions"><button class="btn" onclick="logoutPanel()">خروج</button><button class="primary" onclick="refreshData()">به‌روزرسانی</button></div>
+      </div>
+>
