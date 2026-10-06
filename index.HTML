@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+
+  <title>ZD License Panel</title>
+
+  <style>
+    body {
+      font-family: Tahoma, Arial, sans-serif;
+      background: #0b1020;
+      color: white;
+      padding: 30px;
+    }
+
+    input,
+    button {
+      padding: 12px;
+      margin: 5px 0;
+      border-radius: 10px;
+      border: 1px solid #333;
+    }
+
+    input {
+      background: #111827;
+      color: white;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    button {
+      background: #6d5dfc;
+      color: white;
+      cursor: pointer;
+    }
+
+    .box {
+      max-width: 600px;
+      margin: auto;
+      background: #111827;
+      padding: 20px;
+      border-radius: 20px;
+    }
+
+    pre {
+      background: #050811;
+      padding: 15px;
+      border-radius: 12px;
+      overflow: auto;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="box">
+
+  <h1>ZD License Panel</h1>
+
+  <input
+    id="token"
+    type="password"
+    placeholder="Admin Token"
+  >
+
+  <button onclick="loadKeys()">
+    دریافت کلیدها
+  </button>
+
+  <pre id="output">
+هنوز اطلاعاتی دریافت نشده
+  </pre>
+
+</div>
+
+<script>
+
+const API_URL =
+  "https://https://zd-license-api.amyratfy8.workers.dev";
+
+async function loadKeys() {
+
+  const token =
+    document.getElementById("token").value;
+
+  const response =
+    await fetch(
+      API_URL + "/api/keys",
+      {
+        headers: {
+          "Authorization":
+            "Bearer " + token
+        }
+      }
+    );
+
+  const data =
+    await response.json();
+
+  document.getElementById("output")
+    .textContent =
+    JSON.stringify(
+      data,
+      null,
+      2
+    );
+}
+
+</script>
+
+</body>
+</html>
