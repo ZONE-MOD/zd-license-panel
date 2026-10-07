@@ -1,0 +1,2080 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ZD Key Control</title>
+
+  <style>
+    *{
+      box-sizing:border-box;
+      margin:0;
+      padding:0;
+      font-family:Arial,Helvetica,sans-serif;
+    }
+
+    :root{
+      --bg:#070812;
+      --panel:#0d1020;
+      --panel2:#111528;
+      --border:#242a48;
+      --text:#f3f6ff;
+      --muted:#8992ae;
+      --cyan:#00f5d4;
+      --cyan2:#00c8ff;
+      --purple:#8f5cff;
+      --green:#2ee66f;
+      --red:#ff4d6d;
+      --yellow:#ffd166;
+    }
+
+    body{
+      background:
+        radial-gradient(circle at top right,rgba(143,92,255,.15),transparent 28%),
+        radial-gradient(circle at top left,rgba(0,245,212,.08),transparent 30%),
+        var(--bg);
+      color:var(--text);
+      min-height:100vh;
+    }
+
+    button,
+    input,
+    select{
+      font:inherit;
+    }
+
+    button{
+      cursor:pointer;
+    }
+
+    .hidden{
+      display:none!important;
+    }
+
+    /* AUTH */
+
+    #authScreen{
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+    }
+
+    .auth-card{
+      width:100%;
+      max-width:430px;
+      background:rgba(13,16,32,.95);
+      border:1px solid var(--border);
+      border-radius:24px;
+      padding:30px;
+      box-shadow:0 25px 80px rgba(0,0,0,.45);
+      backdrop-filter:blur(10px);
+    }
+
+    .logo{
+      width:64px;
+      height:64px;
+      border-radius:18px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      margin:0 auto 18px;
+      background:linear-gradient(135deg,var(--cyan),var(--purple));
+      color:#041016;
+      font-size:24px;
+      font-weight:900;
+      box-shadow:0 0 30px rgba(0,245,212,.18);
+    }
+
+    .auth-title{
+      text-align:center;
+      font-size:28px;
+      font-weight:900;
+      margin-bottom:8px;
+    }
+
+    .auth-sub{
+      text-align:center;
+      color:var(--muted);
+      margin-bottom:24px;
+      line-height:1.8;
+    }
+
+    /* LAYOUT */
+
+    .app{
+      min-height:100vh;
+    }
+
+    .topbar{
+      position:sticky;
+      top:0;
+      z-index:50;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      padding:16px 20px;
+      border-bottom:1px solid rgba(255,255,255,.05);
+      background:rgba(7,8,18,.84);
+      backdrop-filter:blur(18px);
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+
+    .brand-icon{
+      width:46px;
+      height:46px;
+      border-radius:14px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:linear-gradient(135deg,var(--cyan),var(--purple));
+      color:#041016;
+      font-weight:900;
+    }
+
+    .brand h1{
+      font-size:20px;
+    }
+
+    .brand span{
+      display:block;
+      color:var(--muted);
+      font-size:12px;
+      margin-top:3px;
+    }
+
+    .actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .container{
+      max-width:1400px;
+      margin:0 auto;
+      padding:22px;
+    }
+
+    /* STATS */
+
+    .stats{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:14px;
+      margin-bottom:22px;
+    }
+
+    .stat{
+      background:linear-gradient(180deg,rgba(17,21,40,.95),rgba(11,14,28,.95));
+      border:1px solid var(--border);
+      border-radius:20px;
+      padding:20px;
+      min-height:120px;
+    }
+
+    .stat-label{
+      color:var(--muted);
+      font-size:13px;
+      margin-bottom:12px;
+    }
+
+    .stat-value{
+      font-size:34px;
+      font-weight:900;
+    }
+
+    /* TOOLBAR */
+
+    .toolbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:16px;
+    }
+
+    .toolbar-left{
+      display:flex;
+      gap:10px;
+      flex:1;
+      min-width:260px;
+    }
+
+    .search{
+      flex:1;
+    }
+
+    /* BUTTONS */
+
+    .btn{
+      border:1px solid var(--border);
+      background:#12162a;
+      color:var(--text);
+      padding:12px 16px;
+      border-radius:13px;
+      transition:.18s;
+      font-weight:800;
+    }
+
+    .btn:hover{
+      transform:translateY(-1px);
+      border-color:#394264;
+    }
+
+    .btn.primary{
+      background:linear-gradient(135deg,var(--cyan),var(--cyan2));
+      color:#031015;
+      border:none;
+    }
+
+    .btn.secondary{
+      background:linear-gradient(135deg,#171b31,#111528);
+    }
+
+    .btn.danger{
+      background:rgba(255,77,109,.1);
+      border-color:rgba(255,77,109,.3);
+      color:#ff8ea1;
+    }
+
+    .btn.delete{
+      background:rgba(255,77,109,.14);
+      border-color:rgba(255,77,109,.38);
+      color:#ff8ea1;
+    }
+
+    .btn.success{
+      background:rgba(46,230,111,.1);
+      border-color:rgba(46,230,111,.3);
+      color:#73f19a;
+    }
+
+    /* INPUTS */
+
+    .field{
+      margin-bottom:15px;
+    }
+
+    .field label{
+      display:block;
+      color:#cbd2e9;
+      font-size:13px;
+      margin-bottom:8px;
+      font-weight:700;
+    }
+
+    .input,
+    .select{
+      width:100%;
+      background:#090c18;
+      border:1px solid var(--border);
+      color:var(--text);
+      border-radius:13px;
+      padding:13px 14px;
+      outline:none;
+      transition:.18s;
+    }
+
+    .input:focus,
+    .select:focus{
+      border-color:var(--cyan);
+      box-shadow:0 0 0 3px rgba(0,245,212,.08);
+    }
+
+    .grid-3{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:12px;
+    }
+
+    /* SWITCH */
+
+    .switch-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:15px;
+      padding:14px;
+      background:#090c18;
+      border:1px solid var(--border);
+      border-radius:14px;
+      margin-top:4px;
+    }
+
+    .switch-info strong{
+      display:block;
+      font-size:14px;
+      margin-bottom:4px;
+    }
+
+    .switch-info span{
+      color:var(--muted);
+      font-size:12px;
+    }
+
+    .switch{
+      position:relative;
+      width:52px;
+      height:30px;
+      flex:none;
+    }
+
+    .switch input{
+      opacity:0;
+      width:0;
+      height:0;
+    }
+
+    .slider{
+      position:absolute;
+      inset:0;
+      background:#252b44;
+      border-radius:30px;
+      transition:.2s;
+    }
+
+    .slider:before{
+      content:"";
+      position:absolute;
+      width:22px;
+      height:22px;
+      left:4px;
+      top:4px;
+      border-radius:50%;
+      background:#fff;
+      transition:.2s;
+    }
+
+    .switch input:checked + .slider{
+      background:linear-gradient(90deg,var(--cyan),var(--cyan2));
+    }
+
+    .switch input:checked + .slider:before{
+      transform:translateX(22px);
+    }
+
+    /* CARDS */
+
+    .section{
+      background:rgba(13,16,32,.9);
+      border:1px solid var(--border);
+      border-radius:22px;
+      padding:18px;
+      margin-bottom:20px;
+    }
+
+    .section-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:16px;
+    }
+
+    .section-head h2{
+      font-size:18px;
+    }
+
+    .section-head span{
+      color:var(--muted);
+      font-size:12px;
+    }
+
+    /* KEY LIST */
+
+    .keys-list{
+      display:grid;
+      gap:12px;
+    }
+
+    .key-card{
+      display:grid;
+      grid-template-columns:minmax(180px,1.6fr) 90px 110px 130px 130px auto;
+      gap:12px;
+      align-items:center;
+      padding:16px;
+      background:linear-gradient(180deg,#101429,#0c1020);
+      border:1px solid var(--border);
+      border-radius:18px;
+    }
+
+    .key-main{
+      min-width:0;
+    }
+
+    .key-code{
+      font-size:18px;
+      font-weight:900;
+      letter-spacing:.5px;
+      direction:ltr;
+      text-align:right;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      display:inline-block;
+      max-width:100%;
+      color:var(--cyan);
+      cursor:pointer;
+      transition:.16s;
+      user-select:none;
+    }
+
+    .key-code:hover{
+      text-shadow:0 0 14px rgba(0,245,212,.38);
+      transform:translateY(-1px);
+    }
+
+    .key-meta{
+      color:var(--muted);
+      font-size:12px;
+      margin-top:6px;
+    }
+
+    .mini{
+      color:#d9def1;
+      font-weight:800;
+      font-size:13px;
+    }
+
+    .status{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      width:max-content;
+      min-width:90px;
+      padding:7px 10px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:900;
+    }
+
+    .status.active{
+      color:#83f7a4;
+      background:rgba(46,230,111,.1);
+      border:1px solid rgba(46,230,111,.25);
+    }
+
+    .status.revoked{
+      color:#ff95a7;
+      background:rgba(255,77,109,.1);
+      border:1px solid rgba(255,77,109,.25);
+    }
+
+    .status.expired{
+      color:#ffe18a;
+      background:rgba(255,209,102,.08);
+      border:1px solid rgba(255,209,102,.2);
+    }
+
+    .key-actions{
+      display:flex;
+      gap:8px;
+      justify-content:flex-start;
+      flex-wrap:wrap;
+    }
+
+    /* DEVICE TABLE */
+
+    .table-wrap{
+      overflow:auto;
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      min-width:700px;
+    }
+
+    th,
+    td{
+      padding:12px 10px;
+      text-align:right;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      font-size:13px;
+    }
+
+    th{
+      color:#98a2c0;
+      font-weight:800;
+    }
+
+    td{
+      color:#e9edfa;
+    }
+
+    .device-name{
+      font-weight:800;
+    }
+
+    .device-sub{
+      color:var(--muted);
+      font-size:11px;
+      margin-top:4px;
+    }
+
+    /* MODALS */
+
+    .modal{
+      position:fixed;
+      inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+      background:rgba(0,0,0,.68);
+      z-index:100;
+      backdrop-filter:blur(7px);
+    }
+
+    .modal.show{
+      display:flex;
+    }
+
+    .modal-card{
+      width:100%;
+      max-width:650px;
+      max-height:90vh;
+      overflow:auto;
+      background:#0d1120;
+      border:1px solid var(--border);
+      border-radius:24px;
+      padding:22px;
+      box-shadow:0 30px 100px rgba(0,0,0,.55);
+    }
+
+    .modal-lg{
+      max-width:900px;
+    }
+
+    .modal-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:20px;
+    }
+
+    .modal-head h3{
+      font-size:20px;
+    }
+
+    .close{
+      width:38px;
+      height:38px;
+      border-radius:12px;
+      border:1px solid var(--border);
+      background:#11162a;
+      color:#fff;
+      font-size:20px;
+    }
+
+    .modal-footer{
+      display:flex;
+      justify-content:flex-start;
+      gap:10px;
+      margin-top:20px;
+      flex-wrap:wrap;
+    }
+
+    .detail-grid{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:12px;
+      margin-bottom:18px;
+    }
+
+    .detail-item{
+      background:#090c18;
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:13px;
+    }
+
+    .detail-item span{
+      display:block;
+      color:var(--muted);
+      font-size:11px;
+      margin-bottom:6px;
+    }
+
+    .detail-item strong{
+      direction:ltr;
+      text-align:right;
+      display:block;
+      word-break:break-word;
+    }
+
+    /* TOAST */
+
+    .toast{
+      position:fixed;
+      left:20px;
+      bottom:20px;
+      z-index:200;
+      min-width:240px;
+      max-width:calc(100vw - 40px);
+      background:#11172b;
+      border:1px solid var(--border);
+      color:#fff;
+      padding:13px 16px;
+      border-radius:14px;
+      opacity:0;
+      transform:translateY(12px);
+      pointer-events:none;
+      transition:.2s;
+      box-shadow:0 15px 50px rgba(0,0,0,.4);
+    }
+
+    .toast.show{
+      opacity:1;
+      transform:translateY(0);
+    }
+
+    .empty{
+      text-align:center;
+      padding:35px 15px;
+      color:var(--muted);
+    }
+
+    .hint{
+      color:var(--muted);
+      font-size:11px;
+      line-height:1.7;
+      margin-top:7px;
+    }
+
+    /* RESPONSIVE */
+
+    @media(max-width:1050px){
+      .key-card{
+        grid-template-columns:1fr 1fr;
+      }
+
+      .key-actions{
+        grid-column:1/-1;
+      }
+
+      .stats{
+        grid-template-columns:repeat(2,1fr);
+      }
+    }
+
+    @media(max-width:700px){
+      .topbar{
+        align-items:flex-start;
+        flex-direction:column;
+      }
+
+      .container{
+        padding:14px;
+      }
+
+      .stats{
+        grid-template-columns:1fr 1fr;
+      }
+
+      .stat-value{
+        font-size:26px;
+      }
+
+      .toolbar-left{
+        width:100%;
+      }
+
+      .key-card{
+        grid-template-columns:1fr;
+      }
+
+      .key-actions{
+        grid-column:auto;
+      }
+
+      .grid-3{
+        grid-template-columns:1fr;
+      }
+
+      .detail-grid{
+        grid-template-columns:1fr;
+      }
+
+      .auth-card{
+        padding:22px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- AUTH SCREEN -->
+  <section id="authScreen">
+    <div class="auth-card">
+      <div class="logo">ZD</div>
+
+      <div class="auth-title">ZD Key Control</div>
+
+      <div class="auth-sub">
+        مدیریت کلیدها و دستگاه‌های متصل
+      </div>
+
+      <div class="field">
+        <label>Admin Token</label>
+        <input
+          id="adminToken"
+          class="input"
+          type="password"
+          placeholder="توکن ادمین را وارد کنید"
+          autocomplete="off"
+          spellcheck="false"
+        >
+      </div>
+
+      <button class="btn primary" style="width:100%" onclick="login()">
+        ورود به پنل
+      </button>
+    </div>
+  </section>
+
+
+  <!-- DASHBOARD -->
+  <section id="dashboard" class="app hidden">
+
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-icon">ZD</div>
+
+        <div>
+          <h1>ZD Key Control</h1>
+          <span>License Management Panel</span>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn secondary" onclick="loadData()">
+          بروزرسانی
+        </button>
+
+        <button class="btn danger" onclick="logout()">
+          خروج
+        </button>
+      </div>
+    </header>
+
+
+    <main class="container">
+
+      <!-- STATS -->
+      <section class="stats">
+
+        <div class="stat">
+          <div class="stat-label">کل کلیدها</div>
+          <div id="statKeys" class="stat-value">0</div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-label">کلیدهای فعال</div>
+          <div id="statActive" class="stat-value">0</div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-label">دستگاه‌ها</div>
+          <div id="statDevices" class="stat-value">0</div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-label">Seat مصرف‌شده</div>
+          <div id="statSeats" class="stat-value">0</div>
+        </div>
+
+      </section>
+
+
+      <!-- KEYS -->
+      <section class="section">
+
+        <div class="section-head">
+          <div>
+            <h2>کلیدها</h2>
+            <span>برای کپی، روی خود کد کلید کلیک کن</span>
+          </div>
+
+          <button class="btn primary" onclick="openCreateModal()">
+            + ساخت کلید
+          </button>
+        </div>
+
+
+        <div class="toolbar">
+          <div class="toolbar-left">
+            <input
+              id="searchInput"
+              class="input search"
+              type="text"
+              placeholder="جستجوی کلید..."
+              oninput="renderKeys()"
+            >
+          </div>
+        </div>
+
+
+        <div id="keysList" class="keys-list"></div>
+
+      </section>
+
+
+      <!-- DEVICES -->
+      <section class="section">
+
+        <div class="section-head">
+          <div>
+            <h2>مانیتور دستگاه‌ها</h2>
+            <span>دستگاه‌های ثبت‌شده برای کلیدها</span>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>دستگاه</th>
+                <th>کلید</th>
+                <th>پلتفرم</th>
+                <th>IP</th>
+                <th>وضعیت</th>
+                <th>عملیات</th>
+              </tr>
+            </thead>
+
+            <tbody id="devicesList"></tbody>
+          </table>
+        </div>
+
+      </section>
+
+    </main>
+  </section>
+
+
+  <!-- CREATE / EDIT MODAL -->
+  <div id="keyModal" class="modal">
+
+    <div class="modal-card">
+
+      <div class="modal-head">
+        <h3 id="keyModalTitle">ساخت کلید جدید</h3>
+
+        <button class="close" onclick="closeModal('keyModal')">
+          ×
+        </button>
+      </div>
+
+
+      <div class="field">
+        <label>کد کلید</label>
+
+        <input
+          id="keyCode"
+          class="input"
+          type="text"
+          placeholder="مثلاً Abc-12x-Zd"
+          autocomplete="off"
+          autocapitalize="none"
+          spellcheck="false"
+        >
+
+        <div class="hint">
+          حروف کوچک و بزرگ دقیقاً طبق گزینه پایین ذخیره می‌شوند.
+        </div>
+      </div>
+
+
+      <!-- LOWERCASE OPTION -->
+      <div class="switch-row">
+
+        <div class="switch-info">
+          <strong>حروف کوچک</strong>
+          <span>فعال باشد، کلید با حروف کوچک و بزرگ واردشده حفظ می‌شود.</span>
+        </div>
+
+        <label class="switch">
+          <input id="lowercaseMode" type="checkbox" checked>
+          <span class="slider"></span>
+        </label>
+
+      </div>
+
+
+      <div class="grid-3" style="margin-top:15px">
+
+        <div class="field">
+          <label>Seats</label>
+
+          <input
+            id="seats"
+            class="input"
+            type="number"
+            min="1"
+            value="1"
+          >
+        </div>
+
+        <div class="field">
+          <label>روز</label>
+
+          <input
+            id="days"
+            class="input"
+            type="number"
+            min="0"
+            value="30"
+          >
+        </div>
+
+        <div class="field">
+          <label>ساعت</label>
+
+          <input
+            id="hours"
+            class="input"
+            type="number"
+            min="0"
+            value="0"
+          >
+        </div>
+
+      </div>
+
+
+      <div class="grid-3">
+
+        <div class="field">
+          <label>دقیقه</label>
+
+          <input
+            id="minutes"
+            class="input"
+            type="number"
+            min="0"
+            value="0"
+          >
+        </div>
+
+        <div class="field">
+          <label>نوع پلتفرم</label>
+
+          <select id="platform" class="select">
+            <option value="all">همه پلتفرم‌ها</option>
+            <option value="termux">فقط Termux</option>
+            <option value="other">به‌جز Termux</option>
+          </select>
+
+          <div class="hint">
+            «فقط Termux» فقط در Termux مجاز است؛ «به‌جز Termux» در Termux مجاز نیست.
+          </div>
+        </div>
+
+        <div class="field">
+          <label>وضعیت</label>
+
+          <select id="status" class="select">
+            <option value="active">فعال</option>
+            <option value="revoked">باطل‌شده</option>
+          </select>
+        </div>
+
+      </div>
+
+
+      <div class="modal-footer">
+
+        <button class="btn primary" onclick="saveKey()">
+          ذخیره کلید
+        </button>
+
+        <button class="btn secondary" onclick="closeModal('keyModal')">
+          لغو
+        </button>
+
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- DETAIL MODAL -->
+  <div id="detailModal" class="modal">
+
+    <div class="modal-card modal-lg">
+
+      <div class="modal-head">
+        <h3>جزئیات کلید</h3>
+
+        <button class="close" onclick="closeModal('detailModal')">
+          ×
+        </button>
+      </div>
+
+      <div id="detailContent"></div>
+
+    </div>
+  </div>
+
+
+  <div id="toast" class="toast"></div>
+
+
+<script>
+  const API = "https://zd-license-api.amyratfy8.workers.dev";
+
+  let keys = [];
+  let devices = [];
+  let editingId = null;
+
+  const $ = id => document.getElementById(id);
+
+  function token(){
+    return localStorage.getItem("zd_admin_token") || "";
+  }
+
+  function lockPanel(message = "ابتدا وارد پنل شوید."){
+    toast(message);
+    $("authScreen").classList.remove("hidden");
+    $("dashboard").classList.add("hidden");
+  }
+
+  function escapeHtml(value){
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  function formatDate(timestamp){
+    if(!timestamp) return "-";
+
+    const d = new Date(Number(timestamp));
+
+    if(Number.isNaN(d.getTime())) return "-";
+
+    return d.toLocaleString("fa-IR");
+  }
+
+  function remainingTime(timestamp){
+    const diff = Number(timestamp || 0) - Date.now();
+
+    if(diff <= 0){
+      return "منقضی شده";
+    }
+
+    const days = Math.floor(diff / 86400000);
+    const hours = Math.floor((diff % 86400000) / 3600000);
+    const minutes = Math.floor((diff % 3600000) / 60000);
+
+    if(days > 0){
+      return `${days} روز و ${hours} ساعت`;
+    }
+
+    if(hours > 0){
+      return `${hours} ساعت و ${minutes} دقیقه`;
+    }
+
+    return `${Math.max(1, minutes)} دقیقه`;
+  }
+
+  function isActive(key){
+    return (
+      String(key.status).toLowerCase() === "active" &&
+      Number(key.expires_at || 0) > Date.now()
+    );
+  }
+
+  function normalizeKeys(data){
+    const list = Array.isArray(data?.keys)
+      ? data.keys
+      : Array.isArray(data)
+      ? data
+      : [];
+
+    return list.map(k => ({
+      id: Number(k.id),
+      code: String(k.code ?? ""),
+      seats: Number(k.seats ?? 1),
+      status: String(k.status ?? "active"),
+      platform: String(k.platform ?? "all").toLowerCase(),
+      created_at: Number(k.created_at ?? 0),
+      expires_at: Number(k.expires_at ?? 0)
+    }));
+  }
+
+  function normalizeDevices(data){
+    const list = Array.isArray(data?.devices)
+      ? data.devices
+      : Array.isArray(data)
+      ? data
+      : [];
+
+    return list.map(d => ({
+      id: Number(d.id),
+      key_id: Number(d.key_id),
+      device_name: String(d.device_name ?? "Unknown"),
+      platform: String(d.platform ?? "Unknown"),
+      ip: String(d.ip ?? "unknown"),
+      connected_at: Number(d.connected_at ?? 0),
+      banned: Boolean(
+        d.banned === true ||
+        d.banned === 1 ||
+        String(d.banned) === "1"
+      ),
+      key_code: String(d.key_code ?? "")
+    }));
+  }
+
+  async function api(path, options = {}){
+    const t = token();
+
+    if(!t){
+      throw new Error("توکن ادمین وارد نشده");
+    }
+
+    const headers = {
+      "Content-Type":"application/json",
+      "X-Admin-Token":t,
+      "Authorization":"Bearer " + t,
+      ...(options.headers || {})
+    };
+
+    const response = await fetch(API + path, {
+      ...options,
+      headers,
+      cache:"no-store"
+    });
+
+    let data = {};
+
+    try{
+      data = await response.json();
+    }catch{
+      data = {};
+    }
+
+    if(!response.ok){
+      throw new Error(
+        data?.error ||
+        `HTTP ${response.status}`
+      );
+    }
+
+    return data;
+  }
+
+  async function login(){
+    const t = $("adminToken").value.trim();
+
+    if(!t){
+      toast("Admin Token را وارد کنید");
+      return;
+    }
+
+    localStorage.setItem("zd_admin_token", t);
+
+    try{
+      await loadData();
+
+      $("authScreen").classList.add("hidden");
+      $("dashboard").classList.remove("hidden");
+
+      toast("ورود موفق بود");
+    }catch(error){
+      localStorage.removeItem("zd_admin_token");
+      toast("خطا: " + error.message);
+    }
+  }
+
+  function logout(){
+    localStorage.removeItem("zd_admin_token");
+    $("dashboard").classList.add("hidden");
+    $("authScreen").classList.remove("hidden");
+    $("adminToken").value = "";
+  }
+
+  async function loadData(){
+
+    if(!token()){
+      lockPanel();
+      return;
+    }
+
+    try{
+      const [keysData, devicesData] = await Promise.all([
+        api("/api/keys"),
+        api("/api/devices")
+      ]);
+
+      keys = normalizeKeys(keysData);
+      devices = normalizeDevices(devicesData);
+
+      renderStats();
+      renderKeys();
+      renderDevices();
+
+      $("authScreen").classList.add("hidden");
+      $("dashboard").classList.remove("hidden");
+
+    }catch(error){
+
+      if(
+        error.message.includes("unauthorized") ||
+        error.message.includes("401")
+      ){
+        localStorage.removeItem("zd_admin_token");
+        lockPanel("توکن نامعتبر است");
+        return;
+      }
+
+      toast("خطا در دریافت اطلاعات: " + error.message);
+    }
+  }
+
+  function renderStats(){
+
+    const active = keys.filter(k => isActive(k));
+
+    const totalSeats = keys.reduce(
+      (sum,k) => sum + Math.max(1, Number(k.seats || 1)),
+      0
+    );
+
+    $("statKeys").textContent = keys.length;
+    $("statActive").textContent = active.length;
+    $("statDevices").textContent = devices.length;
+    $("statSeats").textContent = totalSeats;
+  }
+
+  function statusBadge(key){
+
+    if(String(key.status).toLowerCase() === "revoked"){
+      return `<span class="status revoked">باطل‌شده</span>`;
+    }
+
+    if(Number(key.expires_at || 0) <= Date.now()){
+      return `<span class="status expired">منقضی</span>`;
+    }
+
+    return `<span class="status active">فعال</span>`;
+  }
+
+  function platformLabel(value){
+    const platform = String(value || "all").toLowerCase();
+
+    if(platform === "termux") return "فقط Termux";
+    if(platform === "other") return "به‌جز Termux";
+    return "همه";
+  }
+
+  function renderKeys(){
+
+    const list = $("keysList");
+    const query = $("searchInput").value.trim().toLowerCase();
+
+    const filtered = keys.filter(k =>
+      String(k.code).toLowerCase().includes(query)
+    );
+
+    if(!filtered.length){
+      list.innerHTML = `
+        <div class="empty">
+          هیچ کلیدی پیدا نشد.
+        </div>
+      `;
+      return;
+    }
+
+    list.innerHTML = filtered.map(k => {
+
+      const deviceCount = devices.filter(
+        d => Number(d.key_id) === Number(k.id)
+      ).length;
+
+      const deleteButton = `
+        <button
+          class="btn delete"
+          onclick="event.stopPropagation(); deleteKey(${k.id})"
+        >
+          حذف
+        </button>
+      `;
+
+      return `
+        <div class="key-card">
+
+          <div class="key-main">
+            <span
+              class="key-code"
+              title="برای کپی کلیک کنید"
+              onclick="copyKey('${escapeJs(k.code)}')"
+            >
+              ${escapeHtml(k.code)}
+            </span>
+
+            <div class="key-meta">
+              ایجاد: ${escapeHtml(formatDate(k.created_at))}
+            </div>
+          </div>
+
+          <div>
+            <div class="mini">Seats</div>
+            <div class="key-meta">${k.seats}</div>
+          </div>
+
+          <div>
+            <div class="mini">دستگاه</div>
+            <div class="key-meta">${deviceCount}</div>
+          </div>
+
+          <div>
+            <div class="mini">پلتفرم</div>
+            <div class="key-meta">${escapeHtml(platformLabel(k.platform))}</div>
+          </div>
+
+          <div>
+            <div class="mini">باقی‌مانده</div>
+            <div class="key-meta">${escapeHtml(remainingTime(k.expires_at))}</div>
+          </div>
+
+          <div>
+            <div style="margin-bottom:8px">
+              ${statusBadge(k)}
+            </div>
+
+            <div class="key-actions">
+
+              <button
+                class="btn secondary"
+                onclick="showDetails(${k.id})"
+              >
+                جزئیات
+              </button>
+
+              <button
+                class="btn secondary"
+                onclick="openEditModal(${k.id})"
+              >
+                ویرایش
+              </button>
+
+              ${
+                String(k.status).toLowerCase() === "active"
+                  ? `
+                    <button
+                      class="btn danger"
+                      onclick="revokeKey(${k.id})"
+                    >
+                      باطل
+                    </button>
+                  `
+                  : ""
+              }
+
+              ${deleteButton}
+
+            </div>
+          </div>
+
+        </div>
+      `;
+    }).join("");
+  }
+
+  function renderDevices(){
+
+    const tbody = $("devicesList");
+
+    if(!devices.length){
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="6">
+            <div class="empty">هیچ دستگاهی ثبت نشده است.</div>
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    tbody.innerHTML = devices.map(d => {
+
+      const key = keys.find(
+        k => Number(k.id) === Number(d.key_id)
+      );
+
+      return `
+        <tr>
+
+          <td>
+            <div class="device-name">
+              ${escapeHtml(d.device_name)}
+            </div>
+
+            <div class="device-sub">
+              ID: ${d.id}
+            </div>
+          </td>
+
+          <td>
+            <span
+              class="key-code"
+              style="font-size:13px"
+              onclick="copyKey('${escapeJs(key?.code || d.key_code || "")}')"
+              title="برای کپی کلیک کنید"
+            >
+              ${escapeHtml(key?.code || d.key_code || "-")}
+            </span>
+          </td>
+
+          <td>
+            ${escapeHtml(d.platform)}
+          </td>
+
+          <td dir="ltr">
+            ${escapeHtml(d.ip)}
+          </td>
+
+          <td>
+            ${
+              d.banned
+                ? `<span class="status revoked">Ban</span>`
+                : `<span class="status active">Online</span>`
+            }
+          </td>
+
+          <td>
+            <button
+              class="btn ${d.banned ? "success" : "danger"}"
+              onclick="toggleBan(${d.id}, ${d.banned ? "false" : "true"})"
+            >
+              ${d.banned ? "Unban" : "Ban"}
+            </button>
+          </td>
+
+        </tr>
+      `;
+    }).join("");
+  }
+
+  function openCreateModal(){
+
+    editingId = null;
+
+    $("keyModalTitle").textContent = "ساخت کلید جدید";
+
+    $("keyCode").value = "";
+    $("seats").value = "1";
+    $("days").value = "30";
+    $("hours").value = "0";
+    $("minutes").value = "0";
+    $("platform").value = "all";
+    $("status").value = "active";
+    $("lowercaseMode").checked = true;
+
+    openModal("keyModal");
+
+    setTimeout(() => {
+      $("keyCode").focus();
+    }, 100);
+  }
+
+  function openEditModal(id){
+
+    const key = keys.find(k => Number(k.id) === Number(id));
+
+    if(!key){
+      toast("کلید پیدا نشد");
+      return;
+    }
+
+    editingId = id;
+
+    $("keyModalTitle").textContent = "ویرایش کلید";
+
+    $("keyCode").value = key.code;
+    $("seats").value = key.seats;
+    $("platform").value =
+      ["all", "termux", "other"].includes(String(key.platform).toLowerCase())
+        ? String(key.platform).toLowerCase()
+        : "all";
+    $("status").value =
+      String(key.status).toLowerCase() === "revoked"
+        ? "revoked"
+        : "active";
+
+    $("lowercaseMode").checked = true;
+
+    const diff = Math.max(
+      60000,
+      Number(key.expires_at || 0) - Date.now()
+    );
+
+    const days = Math.floor(diff / 86400000);
+    const hours = Math.floor(
+      (diff % 86400000) / 3600000
+    );
+    const minutes = Math.floor(
+      (diff % 3600000) / 60000
+    );
+
+    $("days").value = days;
+    $("hours").value = hours;
+    $("minutes").value = minutes;
+
+    openModal("keyModal");
+  }
+
+  async function saveKey(){
+
+    if(!token()){
+      return lockPanel("ابتدا وارد پنل شوید.");
+    }
+
+    let code = $("keyCode").value.trim();
+
+    if(!code){
+      toast("کد کلید را وارد کنید");
+      return;
+    }
+
+    /*
+      اگر حروف کوچک فعال باشد:
+      دقیقاً همان حالت واردشده حفظ می‌شود.
+
+      اگر خاموش باشد:
+      کلید به حروف بزرگ تبدیل می‌شود.
+    */
+    if(!$("lowercaseMode").checked){
+      code = code.toUpperCase();
+    }
+
+    code = code.replace(/\s+/g, "-");
+
+    const seats =
+      Math.max(
+        1,
+        parseInt($("seats").value || "1", 10)
+      );
+
+    const days =
+      Math.max(
+        0,
+        parseInt($("days").value || "0", 10)
+      );
+
+    const hours =
+      Math.max(
+        0,
+        parseInt($("hours").value || "0", 10)
+      );
+
+    const minutes =
+      Math.max(
+        0,
+        parseInt($("minutes").value || "0", 10)
+      );
+
+    const status = $("status").value === "revoked"
+      ? "revoked"
+      : "active";
+
+    if(days === 0 && hours === 0 && minutes === 0){
+      toast("مدت زمان کلید را وارد کنید");
+      return;
+    }
+
+    const body = {
+      code,
+      seats,
+      status,
+      days,
+      hours,
+      minutes,
+      platform: ["all", "termux", "other"].includes($("platform").value)
+        ? $("platform").value
+        : "all"
+    };
+
+    try{
+
+      if(editingId === null){
+
+        await api("/api/keys", {
+          method:"POST",
+          body:JSON.stringify(body)
+        });
+
+        toast("کلید با موفقیت ساخته شد");
+
+      }else{
+
+        await api(`/api/keys/${editingId}`, {
+          method:"PATCH",
+          body:JSON.stringify(body)
+        });
+
+        toast("کلید با موفقیت ویرایش شد");
+      }
+
+      closeModal("keyModal");
+
+      await loadData();
+
+    }catch(error){
+
+      toast("خطا: " + error.message);
+    }
+  }
+
+  async function revokeKey(id){
+
+    if(!token()){
+      return lockPanel("ابتدا وارد پنل شوید.");
+    }
+
+    const key = keys.find(
+      k => Number(k.id) === Number(id)
+    );
+
+    if(!key){
+      toast("کلید پیدا نشد");
+      return;
+    }
+
+    const shouldRevoke =
+      String(key.status).toLowerCase() !== "revoked";
+
+    const ok = confirm(
+      shouldRevoke
+        ? `کلید زیر باطل شود؟\n\n${key.code}`
+        : `کلید زیر دوباره فعال شود؟\n\n${key.code}`
+    );
+
+    if(!ok) return;
+
+    try{
+
+      await api(`/api/keys/${id}/revoke`, {
+        method:"POST",
+        body:JSON.stringify({
+          revoked: shouldRevoke
+        })
+      });
+
+      await loadData();
+
+      toast(
+        shouldRevoke
+          ? "کلید باطل شد"
+          : "کلید دوباره فعال شد"
+      );
+
+    }catch(error){
+
+      toast("خطا: " + error.message);
+    }
+  }
+
+  async function deleteKey(id){
+
+    if(!token()){
+      return lockPanel("ابتدا وارد پنل شوید.");
+    }
+
+    const key = keys.find(
+      k => Number(k.id) === Number(id)
+    );
+
+    if(!key){
+      toast("کلید پیدا نشد");
+      return;
+    }
+
+    const ok = confirm(
+      `آیا از حذف کامل این کلید مطمئن هستید؟\n\n${key.code}\n\nاین عملیات قابل بازگشت نیست.`
+    );
+
+    if(!ok) return;
+
+    try{
+
+      await api(`/api/keys/${id}`, {
+        method:"DELETE"
+      });
+
+      closeModal("detailModal");
+
+      await loadData();
+
+      toast("کلید با موفقیت حذف شد");
+
+    }catch(error){
+
+      toast("خطا در حذف کلید: " + error.message);
+    }
+  }
+
+  async function toggleBan(id, banned){
+
+    if(!token()){
+      return lockPanel("ابتدا وارد پنل شوید.");
+    }
+
+    try{
+
+      await api(`/api/devices/${id}`, {
+        method:"PATCH",
+        body:JSON.stringify({
+          banned: Boolean(banned)
+        })
+      });
+
+      await loadData();
+
+      toast(
+        banned
+          ? "دستگاه Ban شد"
+          : "دستگاه Unban شد"
+      );
+
+    }catch(error){
+
+      toast("خطا: " + error.message);
+    }
+  }
+
+  function showDetails(id){
+
+    const key = keys.find(
+      k => Number(k.id) === Number(id)
+    );
+
+    if(!key){
+      toast("کلید پیدا نشد");
+      return;
+    }
+
+    const linkedDevices = devices.filter(
+      d => Number(d.key_id) === Number(key.id)
+    );
+
+    let devicesHtml = "";
+
+    if(!linkedDevices.length){
+
+      devicesHtml = `
+        <div class="empty">
+          هنوز دستگاهی به این کلید متصل نشده است.
+        </div>
+      `;
+
+    }else{
+
+      devicesHtml = `
+        <div class="table-wrap">
+          <table>
+
+            <thead>
+              <tr>
+                <th>دستگاه</th>
+                <th>پلتفرم</th>
+                <th>IP</th>
+                <th>وضعیت</th>
+                <th>آخرین اتصال</th>
+                <th>عملیات</th>
+              </tr>
+            </thead>
+
+            <tbody>
+
+              ${linkedDevices.map(d => `
+                <tr>
+
+                  <td>
+                    <div class="device-name">
+                      ${escapeHtml(d.device_name)}
+                    </div>
+
+                    <div class="device-sub">
+                      ID: ${d.id}
+                    </div>
+                  </td>
+
+                  <td>
+                    ${escapeHtml(d.platform)}
+                  </td>
+
+                  <td dir="ltr">
+                    ${escapeHtml(d.ip)}
+                  </td>
+
+                  <td>
+                    ${
+                      d.banned
+                        ? `<span class="status revoked">Ban</span>`
+                        : `<span class="status active">فعال</span>`
+                    }
+                  </td>
+
+                  <td>
+                    ${escapeHtml(formatDate(d.connected_at))}
+                  </td>
+
+                  <td>
+                    <button
+                      class="btn ${d.banned ? "success" : "danger"}"
+                      onclick="toggleBan(${d.id}, ${d.banned ? "false" : "true"}); showDetails(${key.id})"
+                    >
+                      ${d.banned ? "Unban" : "Ban"}
+                    </button>
+                  </td>
+
+                </tr>
+              `).join("")}
+
+            </tbody>
+
+          </table>
+        </div>
+      `;
+    }
+
+    $("detailContent").innerHTML = `
+
+      <div class="detail-grid">
+
+        <div class="detail-item">
+
+          <span>کد کلید</span>
+
+          <strong
+            class="key-code"
+            onclick="copyKey('${escapeJs(key.code)}')"
+            title="برای کپی کلیک کنید"
+          >
+            ${escapeHtml(key.code)}
+          </strong>
+
+        </div>
+
+        <div class="detail-item">
+          <span>وضعیت</span>
+          <strong>${statusBadge(key)}</strong>
+        </div>
+
+        <div class="detail-item">
+          <span>Seats</span>
+          <strong>${key.seats}</strong>
+        </div>
+
+        <div class="detail-item">
+          <span>پلتفرم مجاز</span>
+          <strong>${escapeHtml(platformLabel(key.platform))}</strong>
+        </div>
+
+        <div class="detail-item">
+          <span>دستگاه‌های متصل</span>
+          <strong>${linkedDevices.length}</strong>
+        </div>
+
+        <div class="detail-item">
+          <span>تاریخ ساخت</span>
+          <strong>${escapeHtml(formatDate(key.created_at))}</strong>
+        </div>
+
+        <div class="detail-item">
+          <span>تاریخ انقضا</span>
+          <strong>${escapeHtml(formatDate(key.expires_at))}</strong>
+        </div>
+
+      </div>
+
+      <div class="section-head">
+        <div>
+          <h2 style="font-size:16px">دستگاه‌های این کلید</h2>
+        </div>
+      </div>
+
+      ${devicesHtml}
+
+      <div class="modal-footer">
+
+        <button
+          class="btn secondary"
+          onclick="copyKey('${escapeJs(key.code)}')"
+        >
+          کپی کلید
+        </button>
+
+        <button
+          class="btn secondary"
+          onclick="openEditModal(${key.id}); closeModal('detailModal')"
+        >
+          ویرایش
+        </button>
+
+        <button
+          class="btn delete"
+          onclick="deleteKey(${key.id})"
+        >
+          حذف کامل کلید
+        </button>
+
+        <button
+          class="btn secondary"
+          onclick="closeModal('detailModal')"
+        >
+          بستن
+        </button>
+
+      </div>
+    `;
+
+    openModal("detailModal");
+  }
+
+  async function copyKey(value){
+
+    if(!value){
+      toast("کدی برای کپی وجود ندارد");
+      return;
+    }
+
+    try{
+
+      await navigator.clipboard.writeText(value);
+
+      toast("کلید کپی شد");
+
+    }catch(error){
+
+      const textarea = document.createElement("textarea");
+
+      textarea.value = value;
+      textarea.style.position = "fixed";
+      textarea.style.opacity = "0";
+      textarea.style.pointerEvents = "none";
+
+      document.body.appendChild(textarea);
+
+      textarea.focus();
+      textarea.select();
+
+      try{
+        document.execCommand("copy");
+        toast("کلید کپی شد");
+      }catch{
+        toast("کپی خودکار انجام نشد");
+      }
+
+      textarea.remove();
+    }
+  }
+
+  function escapeJs(value){
+    return String(value ?? "")
+      .replace(/\\/g,"\\\\")
+      .replace(/'/g,"\\'")
+      .replace(/"/g,'\\"')
+      .replace(/\r/g,"\\r")
+      .replace(/\n/g,"\\n");
+  }
+
+  function openModal(id){
+    $(id).classList.add("show");
+  }
+
+  function closeModal(id){
+    $(id).classList.remove("show");
+  }
+
+  function toast(message){
+
+    const el = $("toast");
+
+    el.textContent = message;
+    el.classList.add("show");
+
+    clearTimeout(el._timer);
+
+    el._timer = setTimeout(() => {
+      el.classList.remove("show");
+    }, 2600);
+  }
+
+  /* بستن مودال با کلیک بیرون */
+  document.querySelectorAll(".modal").forEach(modal => {
+
+    modal.addEventListener("click", event => {
+
+      if(event.target === modal){
+        modal.classList.remove("show");
+      }
+
+    });
+
+  });
+
+  /* Enter برای ورود */
+  $("adminToken").addEventListener("keydown", event => {
+
+    if(event.key === "Enter"){
+      login();
+    }
+
+  });
+
+  /* بروزرسانی اتوماتیک */
+  setInterval(() => {
+
+    if(
+      token() &&
+      !$("dashboard").classList.contains("hidden")
+    ){
+      loadData();
+    }
+
+  }, 30000);
+
+
+  /* در صورت ذخیره قبلی توکن */
+  (async function boot(){
+
+    if(!token()){
+      $("authScreen").classList.remove("hidden");
+      $("dashboard").classList.add("hidden");
+      return;
+    }
+
+    try{
+
+      await loadData();
+
+    }catch{
+
+      localStorage.removeItem("zd_admin_token");
+
+      $("authScreen").classList.remove("hidden");
+      $("dashboard").classList.add("hidden");
+    }
+
+  })();
+
+</script>
+
+</body>
+</html>
