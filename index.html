@@ -397,7 +397,7 @@
 
     .key-card{
       display:grid;
-      grid-template-columns:minmax(180px,1.6fr) 110px 130px 150px auto;
+      grid-template-columns:minmax(180px,1.6fr) 90px 110px 130px 130px auto;
       gap:12px;
       align-items:center;
       padding:16px;
@@ -968,6 +968,20 @@
         </div>
 
         <div class="field">
+          <label>نوع پلتفرم</label>
+
+          <select id="platform" class="select">
+            <option value="all">همه پلتفرم‌ها</option>
+            <option value="termux">فقط Termux</option>
+            <option value="other">به‌جز Termux</option>
+          </select>
+
+          <div class="hint">
+            «فقط Termux» فقط در Termux مجاز است؛ «به‌جز Termux» در Termux مجاز نیست.
+          </div>
+        </div>
+
+        <div class="field">
           <label>وضعیت</label>
 
           <select id="status" class="select">
@@ -1096,6 +1110,7 @@
       code: String(k.code ?? ""),
       seats: Number(k.seats ?? 1),
       status: String(k.status ?? "active"),
+      platform: String(k.platform ?? "all").toLowerCase(),
       created_at: Number(k.created_at ?? 0),
       expires_at: Number(k.expires_at ?? 0)
     }));
@@ -1258,6 +1273,14 @@
     return `<span class="status active">فعال</span>`;
   }
 
+  function platformLabel(value){
+    const platform = String(value || "all").toLowerCase();
+
+    if(platform === "termux") return "فقط Termux";
+    if(platform === "other") return "به‌جز Termux";
+    return "همه";
+  }
+
   function renderKeys(){
 
     const list = $("keysList");
@@ -1319,6 +1342,11 @@
           <div>
             <div class="mini">دستگاه</div>
             <div class="key-meta">${deviceCount}</div>
+          </div>
+
+          <div>
+            <div class="mini">پلتفرم</div>
+            <div class="key-meta">${escapeHtml(platformLabel(k.platform))}</div>
           </div>
 
           <div>
@@ -1456,6 +1484,7 @@
     $("days").value = "30";
     $("hours").value = "0";
     $("minutes").value = "0";
+    $("platform").value = "all";
     $("status").value = "active";
     $("lowercaseMode").checked = true;
 
@@ -1481,6 +1510,10 @@
 
     $("keyCode").value = key.code;
     $("seats").value = key.seats;
+    $("platform").value =
+      ["all", "termux", "other"].includes(String(key.platform).toLowerCase())
+        ? String(key.platform).toLowerCase()
+        : "all";
     $("status").value =
       String(key.status).toLowerCase() === "revoked"
         ? "revoked"
@@ -1573,7 +1606,10 @@
       status,
       days,
       hours,
-      minutes
+      minutes,
+      platform: ["all", "termux", "other"].includes($("platform").value)
+        ? $("platform").value
+        : "all"
     };
 
     try{
@@ -1853,6 +1889,11 @@
         <div class="detail-item">
           <span>Seats</span>
           <strong>${key.seats}</strong>
+        </div>
+
+        <div class="detail-item">
+          <span>پلتفرم مجاز</span>
+          <strong>${escapeHtml(platformLabel(key.platform))}</strong>
         </div>
 
         <div class="detail-item">
