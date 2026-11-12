@@ -1,0 +1,2502 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ZD Key Control</title>
+
+  <style>
+    *{
+      box-sizing:border-box;
+      margin:0;
+      padding:0;
+      font-family:"Segoe UI",Tahoma,Arial,sans-serif;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    :root{
+      --bg:#08070d;
+      --bg-2:#0d0b13;
+      --panel:#111018;
+      --panel-2:#15131d;
+      --panel-3:#0e0c14;
+      --border:rgba(255,255,255,.08);
+      --border-strong:rgba(170,95,255,.30);
+      --text:#f7f4fb;
+      --muted:#8f899d;
+      --muted-2:#6f697a;
+      --purple:#a855f7;
+      --purple-2:#7c3aed;
+      --violet:#c084fc;
+      --cyan:#4dd7ff;
+      --green:#35e69a;
+      --red:#ff687f;
+      --yellow:#ffd166;
+      --shadow:0 20px 70px rgba(0,0,0,.40);
+      --radius:22px;
+    }
+
+    html,
+    body{
+      width:100%;
+      min-height:100%;
+      overflow-x:hidden;
+    }
+
+    body{
+      background:
+        radial-gradient(circle at 85% 0%,rgba(168,85,247,.14),transparent 25%),
+        radial-gradient(circle at 10% 10%,rgba(77,215,255,.06),transparent 20%),
+        linear-gradient(180deg,var(--bg) 0%,var(--bg-2) 100%);
+      color:var(--text);
+      min-height:100vh;
+    }
+
+    body::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      opacity:.45;
+      background-image:
+        linear-gradient(rgba(255,255,255,.014) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(255,255,255,.014) 1px,transparent 1px);
+      background-size:32px 32px;
+      mask-image:linear-gradient(to bottom,rgba(0,0,0,.7),transparent 85%);
+    }
+
+    button,
+    input,
+    select{
+      font:inherit;
+    }
+
+    button{
+      cursor:pointer;
+      touch-action:manipulation;
+    }
+
+    .hidden{
+      display:none!important;
+    }
+
+    /* ---------- SHARED ICON ---------- */
+    .btn-icon,
+    .icon-btn svg,
+    .brand-icon svg,
+    .logo svg{
+      width:18px;
+      height:18px;
+      flex:none;
+    }
+
+    .btn-icon{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    /* ---------- AUTH ---------- */
+    #authScreen{
+      min-height:100svh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
+    }
+
+    .auth-card{
+      position:relative;
+      width:100%;
+      max-width:430px;
+      padding:32px;
+      overflow:hidden;
+      background:
+        linear-gradient(180deg,rgba(25,22,33,.96),rgba(13,11,19,.98));
+      border:1px solid var(--border);
+      border-radius:28px;
+      box-shadow:0 35px 100px rgba(0,0,0,.55);
+      backdrop-filter:blur(22px);
+    }
+
+    .auth-card::before{
+      content:"";
+      position:absolute;
+      width:180px;
+      height:180px;
+      left:-70px;
+      top:-80px;
+      background:radial-gradient(circle,rgba(168,85,247,.22),transparent 70%);
+      pointer-events:none;
+    }
+
+    .logo{
+      width:70px;
+      height:70px;
+      border-radius:21px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      margin:0 auto 18px;
+      background:linear-gradient(145deg,#c084fc,#7c3aed);
+      color:#100916;
+      box-shadow:
+        0 12px 30px rgba(124,58,237,.28),
+        inset 0 1px 0 rgba(255,255,255,.38);
+    }
+
+    .logo svg{
+      width:28px;
+      height:28px;
+      stroke-width:2.2;
+    }
+
+    .auth-title{
+      text-align:center;
+      font-size:27px;
+      font-weight:900;
+      letter-spacing:-.5px;
+      margin-bottom:7px;
+    }
+
+    .auth-sub{
+      text-align:center;
+      color:var(--muted);
+      font-size:13px;
+      margin-bottom:24px;
+      line-height:1.9;
+    }
+
+    /* ---------- LAYOUT ---------- */
+    .app{
+      min-height:100svh;
+      padding-bottom:env(safe-area-inset-bottom);
+    }
+
+    .topbar{
+      position:sticky;
+      top:0;
+      z-index:50;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      padding:14px 20px;
+      border-bottom:1px solid rgba(255,255,255,.055);
+      background:rgba(8,7,13,.78);
+      backdrop-filter:blur(24px);
+      box-shadow:0 8px 30px rgba(0,0,0,.12);
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+    }
+
+    .brand-icon{
+      width:44px;
+      height:44px;
+      border-radius:15px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:linear-gradient(145deg,#c084fc,#7c3aed);
+      color:#120918;
+      box-shadow:0 8px 24px rgba(124,58,237,.22),inset 0 1px 0 rgba(255,255,255,.38);
+    }
+
+    .brand-icon svg{
+      width:21px;
+      height:21px;
+      stroke-width:2.1;
+    }
+
+    .brand h1{
+      font-size:18px;
+      font-weight:900;
+      letter-spacing:-.2px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .brand span{
+      display:block;
+      color:var(--muted-2);
+      font-size:11px;
+      margin-top:3px;
+      white-space:nowrap;
+    }
+
+    .actions{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
+    .container{
+      width:min(1400px,100%);
+      margin:0 auto;
+      padding:22px;
+    }
+
+    /* ---------- STATS ---------- */
+    .stats{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:12px;
+      margin-bottom:18px;
+    }
+
+    .stat{
+      position:relative;
+      overflow:hidden;
+      min-height:118px;
+      padding:18px;
+      background:linear-gradient(180deg,rgba(23,20,31,.96),rgba(15,13,21,.96));
+      border:1px solid var(--border);
+      border-radius:20px;
+      box-shadow:0 12px 30px rgba(0,0,0,.16);
+    }
+
+    .stat::after{
+      content:"";
+      position:absolute;
+      width:100px;
+      height:100px;
+      left:-45px;
+      bottom:-55px;
+      border-radius:50%;
+      background:radial-gradient(circle,rgba(168,85,247,.14),transparent 68%);
+      pointer-events:none;
+    }
+
+    .stat-label{
+      color:var(--muted);
+      font-size:12px;
+      font-weight:700;
+      margin-bottom:11px;
+    }
+
+    .stat-value{
+      font-size:33px;
+      line-height:1;
+      font-weight:900;
+      letter-spacing:-1px;
+    }
+
+    /* ---------- TOOLBAR ---------- */
+    .toolbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:14px;
+    }
+
+    .toolbar-left{
+      display:flex;
+      gap:10px;
+      flex:1;
+      min-width:0;
+    }
+
+    .search{
+      flex:1;
+    }
+
+    /* ---------- BUTTONS ---------- */
+    .btn{
+      min-height:44px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      border:1px solid var(--border);
+      background:linear-gradient(180deg,#1a1722,#121019);
+      color:var(--text);
+      padding:10px 14px;
+      border-radius:14px;
+      transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease,background .18s ease;
+      font-weight:800;
+      font-size:13px;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.035);
+      white-space:nowrap;
+    }
+
+    .btn:hover{
+      transform:translateY(-1px);
+      border-color:rgba(255,255,255,.15);
+      box-shadow:0 10px 24px rgba(0,0,0,.18);
+    }
+
+    .btn:active{
+      transform:translateY(0) scale(.985);
+    }
+
+    .btn.primary{
+      background:linear-gradient(135deg,#bb74ff,#7c3aed);
+      color:#12091a;
+      border-color:transparent;
+      box-shadow:0 10px 28px rgba(124,58,237,.22),inset 0 1px 0 rgba(255,255,255,.32);
+    }
+
+    .btn.primary:hover{
+      border-color:transparent;
+      box-shadow:0 14px 34px rgba(124,58,237,.30),inset 0 1px 0 rgba(255,255,255,.34);
+    }
+
+    .btn.secondary{
+      background:linear-gradient(180deg,#1a1723,#111017);
+    }
+
+    .btn.danger{
+      background:rgba(255,104,127,.08);
+      border-color:rgba(255,104,127,.24);
+      color:#ff9aaa;
+    }
+
+    .btn.delete{
+      background:rgba(255,104,127,.10);
+      border-color:rgba(255,104,127,.30);
+      color:#ff9aaa;
+    }
+
+    .btn.success{
+      background:rgba(53,230,154,.08);
+      border-color:rgba(53,230,154,.22);
+      color:#78f2ba;
+    }
+
+    .icon-only{
+      width:42px;
+      min-width:42px;
+      padding:0;
+    }
+
+    /* ---------- INPUTS ---------- */
+    .field{
+      margin-bottom:14px;
+    }
+
+    .field label{
+      display:block;
+      color:#d8d2e0;
+      font-size:12px;
+      margin-bottom:8px;
+      font-weight:800;
+    }
+
+    .input,
+    .select{
+      width:100%;
+      min-height:46px;
+      background:#0c0a11;
+      border:1px solid var(--border);
+      color:var(--text);
+      border-radius:14px;
+      padding:11px 13px;
+      outline:none;
+      transition:border-color .18s,box-shadow .18s,background .18s;
+    }
+
+    .input::placeholder{
+      color:#5e5968;
+    }
+
+    .input:focus,
+    .select:focus{
+      border-color:rgba(168,85,247,.72);
+      box-shadow:0 0 0 3px rgba(168,85,247,.11),0 10px 25px rgba(0,0,0,.12);
+      background:#0f0c15;
+    }
+
+    .grid-3{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:12px;
+    }
+
+    /* ---------- SWITCH ---------- */
+    .switch-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:15px;
+      padding:14px;
+      background:#0c0a11;
+      border:1px solid var(--border);
+      border-radius:16px;
+      margin-top:4px;
+    }
+
+    .switch-info{
+      min-width:0;
+    }
+
+    .switch-info strong{
+      display:block;
+      font-size:13px;
+      margin-bottom:4px;
+    }
+
+    .switch-info span{
+      color:var(--muted);
+      font-size:11px;
+      line-height:1.6;
+    }
+
+    .switch{
+      position:relative;
+      width:52px;
+      height:30px;
+      flex:none;
+    }
+
+    .switch input{
+      opacity:0;
+      width:0;
+      height:0;
+    }
+
+    .slider{
+      position:absolute;
+      inset:0;
+      background:#292531;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:30px;
+      transition:.2s;
+    }
+
+    .slider:before{
+      content:"";
+      position:absolute;
+      width:22px;
+      height:22px;
+      left:4px;
+      top:3px;
+      border-radius:50%;
+      background:#fff;
+      box-shadow:0 3px 10px rgba(0,0,0,.28);
+      transition:.2s;
+    }
+
+    .switch input:checked + .slider{
+      background:linear-gradient(90deg,#b86cff,#7c3aed);
+      border-color:transparent;
+    }
+
+    .switch input:checked + .slider:before{
+      transform:translateX(22px);
+    }
+
+    /* ---------- CARDS ---------- */
+    .section{
+      background:linear-gradient(180deg,rgba(18,16,24,.96),rgba(12,10,17,.97));
+      border:1px solid var(--border);
+      border-radius:24px;
+      padding:17px;
+      margin-bottom:16px;
+      box-shadow:var(--shadow);
+    }
+
+    .section-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:14px;
+    }
+
+    .section-head > div:first-child{
+      min-width:0;
+    }
+
+    .section-head h2{
+      font-size:16px;
+      font-weight:900;
+      letter-spacing:-.15px;
+    }
+
+    .section-head span{
+      color:var(--muted);
+      font-size:11px;
+      line-height:1.7;
+    }
+
+    /* ---------- KEY LIST ---------- */
+    .keys-list{
+      display:grid;
+      gap:10px;
+    }
+
+    .key-card{
+      display:grid;
+      grid-template-columns:minmax(220px,1.65fr) repeat(4,minmax(70px,.55fr)) minmax(220px,auto);
+      gap:10px;
+      align-items:center;
+      padding:14px;
+      background:linear-gradient(180deg,#15121c,#100e15);
+      border:1px solid rgba(255,255,255,.065);
+      border-radius:19px;
+      transition:border-color .18s,transform .18s,box-shadow .18s;
+    }
+
+    .key-card:hover{
+      border-color:rgba(168,85,247,.24);
+      transform:translateY(-1px);
+      box-shadow:0 14px 28px rgba(0,0,0,.18);
+    }
+
+    .key-main{
+      min-width:0;
+      padding:4px 2px;
+    }
+
+    .key-code{
+      display:inline-flex;
+      align-items:center;
+      max-width:100%;
+      gap:8px;
+      direction:ltr;
+      text-align:right;
+      color:#cc8aff;
+      font-size:17px;
+      line-height:1.2;
+      font-weight:900;
+      letter-spacing:.35px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      cursor:pointer;
+      user-select:none;
+      transition:text-shadow .16s,transform .16s,color .16s;
+    }
+
+    .key-code::before{
+      content:"";
+      width:7px;
+      height:7px;
+      border-radius:50%;
+      background:#bf83ff;
+      box-shadow:0 0 12px rgba(191,131,255,.55);
+      flex:none;
+    }
+
+    .key-code:hover{
+      color:#e2beff;
+      text-shadow:0 0 18px rgba(168,85,247,.30);
+      transform:translateY(-1px);
+    }
+
+    .key-meta{
+      color:var(--muted-2);
+      font-size:10.5px;
+      margin-top:5px;
+      line-height:1.5;
+    }
+
+    .mini{
+      color:#ded8e8;
+      font-weight:800;
+      font-size:10px;
+      margin-bottom:3px;
+    }
+
+    .key-card > div:not(.key-main):not(:last-child){
+      padding:10px 9px;
+      background:rgba(255,255,255,.018);
+      border:1px solid rgba(255,255,255,.035);
+      border-radius:13px;
+    }
+
+    .status{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      width:max-content;
+      min-width:76px;
+      min-height:28px;
+      padding:6px 9px;
+      border-radius:999px;
+      font-size:10px;
+      line-height:1;
+      font-weight:900;
+      letter-spacing:.1px;
+    }
+
+    .status::before{
+      content:"";
+      width:6px;
+      height:6px;
+      border-radius:50%;
+      margin-left:6px;
+    }
+
+    .status.active{
+      color:#8af6be;
+      background:rgba(53,230,154,.08);
+      border:1px solid rgba(53,230,154,.18);
+    }
+
+    .status.active::before{
+      background:#35e69a;
+      box-shadow:0 0 10px rgba(53,230,154,.50);
+    }
+
+    .status.revoked{
+      color:#ff9aaa;
+      background:rgba(255,104,127,.08);
+      border:1px solid rgba(255,104,127,.18);
+    }
+
+    .status.revoked::before{
+      background:#ff687f;
+      box-shadow:0 0 10px rgba(255,104,127,.40);
+    }
+
+    .status.expired{
+      color:#ffe39a;
+      background:rgba(255,209,102,.07);
+      border:1px solid rgba(255,209,102,.17);
+    }
+
+    .status.expired::before{
+      background:#ffd166;
+      box-shadow:0 0 10px rgba(255,209,102,.40);
+    }
+
+    .key-actions{
+      display:flex;
+      gap:7px;
+      justify-content:flex-start;
+      flex-wrap:wrap;
+    }
+
+    .key-actions .btn{
+      min-height:38px;
+      padding:8px 10px;
+      border-radius:12px;
+      font-size:11px;
+    }
+
+    /* ---------- DEVICE TABLE ---------- */
+    .table-wrap{
+      overflow:auto;
+      border:1px solid rgba(255,255,255,.045);
+      border-radius:16px;
+      background:rgba(0,0,0,.08);
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      min-width:680px;
+    }
+
+    th,
+    td{
+      padding:12px 11px;
+      text-align:right;
+      border-bottom:1px solid rgba(255,255,255,.055);
+      font-size:12px;
+    }
+
+    th{
+      color:#8f899d;
+      font-size:10px;
+      font-weight:900;
+      background:rgba(255,255,255,.018);
+    }
+
+    td{
+      color:#eae4f0;
+    }
+
+    tr:last-child td{
+      border-bottom:0;
+    }
+
+    .device-name{
+      font-weight:800;
+    }
+
+    .device-sub{
+      color:var(--muted-2);
+      font-size:10px;
+      margin-top:3px;
+    }
+
+    /* ---------- MODALS ---------- */
+    .modal{
+      position:fixed;
+      inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:14px;
+      background:rgba(0,0,0,.72);
+      z-index:100;
+      backdrop-filter:blur(9px);
+    }
+
+    .modal.show{
+      display:flex;
+    }
+
+    .modal-card{
+      width:100%;
+      max-width:650px;
+      max-height:min(92svh,900px);
+      overflow:auto;
+      background:linear-gradient(180deg,#17131e,#0d0b12);
+      border:1px solid rgba(255,255,255,.09);
+      border-radius:24px;
+      padding:20px;
+      box-shadow:0 40px 120px rgba(0,0,0,.60);
+    }
+
+    .modal-lg{
+      max-width:900px;
+    }
+
+    .modal-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:18px;
+    }
+
+    .modal-head h3{
+      font-size:18px;
+      font-weight:900;
+    }
+
+    .close{
+      width:40px;
+      height:40px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:13px;
+      border:1px solid var(--border);
+      background:#121018;
+      color:#fff;
+      font-size:0;
+      transition:.18s;
+    }
+
+    .close:hover{
+      border-color:rgba(255,255,255,.15);
+      background:#191621;
+    }
+
+    .close::before{
+      content:"";
+      width:15px;
+      height:15px;
+      background:currentColor;
+      clip-path:polygon(16% 0,50% 34%,84% 0,100% 16%,66% 50%,100% 84%,84% 100%,50% 66%,16% 100%,0 84%,34% 50%,0 16%);
+    }
+
+    .modal-footer{
+      display:flex;
+      justify-content:flex-start;
+      gap:8px;
+      margin-top:18px;
+      flex-wrap:wrap;
+    }
+
+    .detail-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:10px;
+      margin-bottom:16px;
+    }
+
+    .detail-item{
+      background:#0d0b12;
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:15px;
+      padding:12px;
+    }
+
+    .detail-item span{
+      display:block;
+      color:var(--muted);
+      font-size:10px;
+      margin-bottom:5px;
+    }
+
+    .detail-item strong{
+      direction:ltr;
+      text-align:right;
+      display:block;
+      word-break:break-word;
+      font-size:13px;
+    }
+
+    /* ---------- TOAST ---------- */
+    .toast{
+      position:fixed;
+      left:50%;
+      bottom:18px;
+      transform:translate(-50%,14px);
+      z-index:200;
+      width:max-content;
+      min-width:220px;
+      max-width:calc(100vw - 28px);
+      text-align:center;
+      background:rgba(22,18,30,.96);
+      border:1px solid rgba(255,255,255,.08);
+      color:#fff;
+      padding:12px 15px;
+      border-radius:14px;
+      opacity:0;
+      pointer-events:none;
+      transition:.22s ease;
+      box-shadow:0 16px 45px rgba(0,0,0,.40);
+    }
+
+    .toast.show{
+      opacity:1;
+      transform:translate(-50%,0);
+    }
+
+    .empty{
+      text-align:center;
+      padding:34px 15px;
+      color:var(--muted);
+      font-size:12px;
+    }
+
+    .hint{
+      color:var(--muted-2);
+      font-size:10px;
+      line-height:1.7;
+      margin-top:6px;
+    }
+
+    /* ---------- MOBILE ---------- */
+    @media(max-width:1050px){
+      .key-card{
+        grid-template-columns:minmax(0,1.5fr) repeat(2,minmax(80px,.65fr));
+      }
+
+      .key-main{
+        grid-column:1/-1;
+      }
+
+      .key-card > div:last-child{
+        grid-column:1/-1;
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:10px;
+      }
+
+      .key-card > div:last-child > div:first-child{
+        margin-bottom:0!important;
+      }
+
+      .stats{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+      }
+    }
+
+    @media(max-width:700px){
+      #authScreen{
+        padding:12px;
+      }
+
+      .auth-card{
+        padding:24px 18px;
+        border-radius:22px;
+      }
+
+      .topbar{
+        align-items:stretch;
+        flex-direction:column;
+        padding:12px 14px;
+      }
+
+      .brand{
+        width:100%;
+      }
+
+      .brand-icon{
+        width:40px;
+        height:40px;
+        border-radius:13px;
+      }
+
+      .brand h1{
+        font-size:16px;
+      }
+
+      .brand span{
+        font-size:10px;
+      }
+
+      .actions{
+        width:100%;
+        display:grid;
+        grid-template-columns:1fr 1fr;
+      }
+
+      .actions .btn{
+        width:100%;
+      }
+
+      .container{
+        padding:12px;
+      }
+
+      .stats{
+        grid-template-columns:1fr 1fr;
+        gap:9px;
+        margin-bottom:12px;
+      }
+
+      .stat{
+        min-height:98px;
+        padding:14px;
+        border-radius:17px;
+      }
+
+      .stat-label{
+        font-size:10px;
+        margin-bottom:9px;
+      }
+
+      .stat-value{
+        font-size:27px;
+      }
+
+      .section{
+        padding:13px;
+        border-radius:19px;
+        margin-bottom:12px;
+      }
+
+      .section-head{
+        align-items:flex-start;
+      }
+
+      .section-head .btn{
+        min-height:40px;
+        padding:8px 10px;
+        font-size:11px;
+      }
+
+      .toolbar{
+        margin-bottom:10px;
+      }
+
+      .toolbar-left{
+        width:100%;
+      }
+
+      .input,
+      .select{
+        min-height:44px;
+      }
+
+      .key-card{
+        grid-template-columns:1fr 1fr;
+        gap:8px;
+        padding:11px;
+        border-radius:17px;
+      }
+
+      .key-main{
+        grid-column:1/-1;
+        padding:4px 2px 7px;
+      }
+
+      .key-card > div:not(.key-main):not(:last-child){
+        padding:9px;
+        border-radius:12px;
+      }
+
+      .key-card > div:nth-child(2),
+      .key-card > div:nth-child(4){
+        grid-column:span 1;
+      }
+
+      .key-card > div:nth-child(3),
+      .key-card > div:nth-child(5){
+        grid-column:span 1;
+      }
+
+      .key-card > div:last-child{
+        grid-column:1/-1;
+        flex-direction:column;
+        align-items:stretch;
+        background:transparent;
+        border:0;
+        padding:1px 0 0;
+      }
+
+      .key-actions{
+        width:100%;
+        display:grid;
+        grid-template-columns:repeat(2,minmax(0,1fr));
+      }
+
+      .key-actions .btn{
+        width:100%;
+        min-height:40px;
+        padding:8px;
+      }
+
+      .grid-3,
+      .detail-grid{
+        grid-template-columns:1fr;
+      }
+
+      .modal{
+        align-items:flex-end;
+        padding:8px;
+      }
+
+      .modal-card{
+        max-height:92svh;
+        padding:16px;
+        border-radius:22px 22px 16px 16px;
+      }
+
+      .modal-footer{
+        display:grid;
+        grid-template-columns:1fr 1fr;
+      }
+
+      .modal-footer .btn{
+        width:100%;
+      }
+
+      .modal-footer .btn:last-child:nth-child(4){
+        grid-column:1/-1;
+      }
+
+      .switch-row{
+        padding:12px;
+      }
+
+      table{
+        min-width:620px;
+      }
+    }
+
+    @media(max-width:390px){
+      .stats{
+        grid-template-columns:1fr;
+      }
+
+      .actions{
+        grid-template-columns:1fr;
+      }
+
+      .key-actions{
+        grid-template-columns:1fr;
+      }
+
+      .modal-footer{
+        grid-template-columns:1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- AUTH SCREEN -->
+  <section id="authScreen">
+    <div class="auth-card">
+      <div class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 10.5V8a5.5 5.5 0 0 1 11 0v2.5"/><rect x="4" y="10" width="16" height="10" rx="3"/><path d="M12 14.2v2.3"/></svg></div>
+
+      <div class="auth-title">ZD Key Control</div>
+
+      <div class="auth-sub">
+        مدیریت کلیدها و دستگاه‌های متصل
+      </div>
+
+      <div class="field">
+        <label>Admin Token</label>
+        <input
+          id="adminToken"
+          class="input"
+          type="password"
+          placeholder="توکن ادمین را وارد کنید"
+          autocomplete="off"
+          spellcheck="false"
+        >
+      </div>
+
+      <button class="btn primary" style="width:100%" onclick="login()"><span class="btn-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 12h10"/><path d="M17 5l7 7-7 7"/><path d="M14 5H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h8"/></svg></span>ورود به پنل</button>
+    </div>
+  </section>
+
+
+  <!-- DASHBOARD -->
+  <section id="dashboard" class="app hidden">
+
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 10.5V8a5.5 5.5 0 0 1 11 0v2.5"/><rect x="4" y="10" width="16" height="10" rx="3"/><path d="M12 14.2v2.3"/></svg></div>
+
+        <div>
+          <h1>ZD Key Control</h1>
+          <span>License Management Panel</span>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn secondary" onclick="loadData()">
+          <span class="btn-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 0 0-14.9-3.9L3 10"/><path d="M3 5v5h5"/><path d="M4 13a8 8 0 0 0 14.9 3.9L21 14"/><path d="M21 19v-5h-5"/></svg></span>
+          بروزرسانی
+        </button>
+
+        <button class="btn danger" onclick="logout()"><span class="btn-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 5H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h4"/><path d="M14 16l5-4-5-4"/><path d="M19 12H9"/></svg></span>خروج</button>
+      </div>
+    </header>
+
+
+    <main class="container">
+
+      <!-- STATS -->
+      <section class="stats">
+
+        <div class="stat">
+          <div class="stat-label">کل کلیدها</div>
+          <div id="statKeys" class="stat-value">0</div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-label">کلیدهای فعال</div>
+          <div id="statActive" class="stat-value">0</div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-label">دستگاه‌ها</div>
+          <div id="statDevices" class="stat-value">0</div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-label">Seat مصرف‌شده</div>
+          <div id="statSeats" class="stat-value">0</div>
+        </div>
+
+      </section>
+
+
+      <!-- KEYS -->
+      <section class="section">
+
+        <div class="section-head">
+          <div>
+            <h2>کلیدها</h2>
+            <span>برای کپی، روی خود کد کلید کلیک کن</span>
+          </div>
+
+          <button class="btn primary" onclick="openCreateModal()">
+            <span class="btn-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="14" height="14" rx="3"/><path d="M12 8v8M8 12h8"/></svg></span>
+            ساخت کلید
+          </button>
+        </div>
+
+
+        <div class="toolbar">
+          <div class="toolbar-left">
+            <input
+              id="searchInput"
+              class="input search"
+              type="text"
+              placeholder="جستجوی کلید..."
+              oninput="renderKeys()"
+            >
+          </div>
+        </div>
+
+
+        <div id="keysList" class="keys-list"></div>
+
+      </section>
+
+
+      <!-- DEVICES -->
+      <section class="section">
+
+        <div class="section-head">
+          <div>
+            <h2>مانیتور دستگاه‌ها</h2>
+            <span>دستگاه‌های ثبت‌شده برای کلیدها</span>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>دستگاه</th>
+                <th>کلید</th>
+                <th>پلتفرم</th>
+                <th>IP</th>
+                <th>وضعیت</th>
+                <th>عملیات</th>
+              </tr>
+            </thead>
+
+            <tbody id="devicesList"></tbody>
+          </table>
+        </div>
+
+      </section>
+
+    </main>
+  </section>
+
+
+  <!-- CREATE / EDIT MODAL -->
+  <div id="keyModal" class="modal">
+
+    <div class="modal-card">
+
+      <div class="modal-head">
+        <h3 id="keyModalTitle">ساخت کلید جدید</h3>
+
+        <button class="close" aria-label="بستن" onclick="closeModal('keyModal')"></button>
+      </div>
+
+
+      <div class="field">
+        <label>کد کلید</label>
+
+        <input
+          id="keyCode"
+          class="input"
+          type="text"
+          placeholder="مثلاً Abc-12x-Zd"
+          autocomplete="off"
+          autocapitalize="none"
+          spellcheck="false"
+        >
+
+        <div class="hint">
+          حروف کوچک و بزرگ دقیقاً طبق گزینه پایین ذخیره می‌شوند.
+        </div>
+      </div>
+
+
+      <!-- LOWERCASE OPTION -->
+      <div class="switch-row">
+
+        <div class="switch-info">
+          <strong>حروف کوچک</strong>
+          <span>فعال باشد، کلید با حروف کوچک و بزرگ واردشده حفظ می‌شود.</span>
+        </div>
+
+        <label class="switch">
+          <input id="lowercaseMode" type="checkbox" checked>
+          <span class="slider"></span>
+        </label>
+
+      </div>
+
+
+      <div class="grid-3" style="margin-top:15px">
+
+        <div class="field">
+          <label>Seats</label>
+
+          <input
+            id="seats"
+            class="input"
+            type="number"
+            min="1"
+            value="1"
+          >
+        </div>
+
+        <div class="field">
+          <label>روز</label>
+
+          <input
+            id="days"
+            class="input"
+            type="number"
+            min="0"
+            value="30"
+          >
+        </div>
+
+        <div class="field">
+          <label>ساعت</label>
+
+          <input
+            id="hours"
+            class="input"
+            type="number"
+            min="0"
+            value="0"
+          >
+        </div>
+
+      </div>
+
+
+      <div class="grid-3">
+
+        <div class="field">
+          <label>دقیقه</label>
+
+          <input
+            id="minutes"
+            class="input"
+            type="number"
+            min="0"
+            value="0"
+          >
+        </div>
+
+        <div class="field">
+          <label>نوع پلتفرم</label>
+
+          <select id="platform" class="select">
+            <option value="all">همه پلتفرم‌ها</option>
+            <option value="termux">فقط Termux</option>
+            <option value="other">به‌جز Termux</option>
+          </select>
+
+          <div class="hint">
+            «فقط Termux» فقط در Termux مجاز است؛ «به‌جز Termux» در Termux مجاز نیست.
+          </div>
+        </div>
+
+        <div class="field">
+          <label>وضعیت</label>
+
+          <select id="status" class="select">
+            <option value="active">فعال</option>
+            <option value="revoked">باطل‌شده</option>
+          </select>
+        </div>
+
+      </div>
+
+
+      <div class="modal-footer">
+
+        <button class="btn primary" onclick="saveKey()">
+          <span class="btn-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h11l3 3v13H5z"/><path d="M8 4v6h7V4"/><path d="M9 17h6"/></svg></span>
+          ذخیره کلید
+        </button>
+
+        <button class="btn secondary" onclick="closeModal('keyModal')"><span class="btn-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg></span>لغو</button>
+
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- DETAIL MODAL -->
+  <div id="detailModal" class="modal">
+
+    <div class="modal-card modal-lg">
+
+      <div class="modal-head">
+        <h3>جزئیات کلید</h3>
+
+        <button class="close" aria-label="بستن" onclick="closeModal('detailModal')"></button>
+      </div>
+
+      <div id="detailContent"></div>
+
+    </div>
+  </div>
+
+
+  <div id="toast" class="toast"></div>
+
+
+<script>
+  const API = "https://zd-license-api.amyratfy8.workers.dev";
+
+  let keys = [];
+  let devices = [];
+  let editingId = null;
+
+  const $ = id => document.getElementById(id);
+
+  function token(){
+    return localStorage.getItem("zd_admin_token") || "";
+  }
+
+  function lockPanel(message = "ابتدا وارد پنل شوید."){
+    toast(message);
+    $("authScreen").classList.remove("hidden");
+    $("dashboard").classList.add("hidden");
+  }
+
+  function escapeHtml(value){
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  function formatDate(timestamp){
+    if(!timestamp) return "-";
+
+    const d = new Date(Number(timestamp));
+
+    if(Number.isNaN(d.getTime())) return "-";
+
+    return d.toLocaleString("fa-IR");
+  }
+
+  function remainingTime(timestamp){
+    if(!Number(timestamp || 0)) return "در انتظار اولین استفاده";
+    const diff = Number(timestamp || 0) - Date.now();
+
+    if(diff <= 0){
+      return "منقضی شده";
+    }
+
+    const days = Math.floor(diff / 86400000);
+    const hours = Math.floor((diff % 86400000) / 3600000);
+    const minutes = Math.floor((diff % 3600000) / 60000);
+
+    if(days > 0){
+      return `${days} روز و ${hours} ساعت`;
+    }
+
+    if(hours > 0){
+      return `${hours} ساعت و ${minutes} دقیقه`;
+    }
+
+    return `${Math.max(1, minutes)} دقیقه`;
+  }
+
+  function isActive(key){
+    return (
+      String(key.status).toLowerCase() === "active" &&
+      (
+        Number(key.expires_at || 0) === 0 ||
+        Number(key.expires_at || 0) > Date.now()
+      )
+    );
+  }
+
+  function normalizeKeys(data){
+    const list = Array.isArray(data?.keys)
+      ? data.keys
+      : Array.isArray(data)
+      ? data
+      : [];
+
+    return list.map(k => ({
+      id: Number(k.id),
+      code: String(k.code ?? ""),
+      seats: Number(k.seats ?? 1),
+      status: String(k.status ?? "active"),
+      platform: String(k.platform ?? "all").toLowerCase(),
+      created_at: Number(k.created_at ?? 0),
+      expires_at: Number(k.expires_at ?? 0),
+      activated_at: Number(k.activated_at ?? 0),
+      duration_ms: Number(k.duration_ms ?? 0)
+    }));
+  }
+
+  function normalizeDevices(data){
+    const list = Array.isArray(data?.devices)
+      ? data.devices
+      : Array.isArray(data)
+      ? data
+      : [];
+
+    return list.map(d => ({
+      id: Number(d.id),
+      key_id: Number(d.key_id),
+      device_name: String(d.device_name ?? "Unknown"),
+      platform: String(d.platform ?? "Unknown"),
+      ip: String(d.ip ?? "unknown"),
+      connected_at: Number(d.connected_at ?? 0),
+      banned: Boolean(
+        d.banned === true ||
+        d.banned === 1 ||
+        String(d.banned) === "1"
+      ),
+      key_code: String(d.key_code ?? "")
+    }));
+  }
+
+  async function api(path, options = {}){
+    const t = token();
+
+    if(!t){
+      throw new Error("توکن ادمین وارد نشده");
+    }
+
+    const headers = {
+      "Content-Type":"application/json",
+      "X-Admin-Token":t,
+      "Authorization":"Bearer " + t,
+      ...(options.headers || {})
+    };
+
+    const response = await fetch(API + path, {
+      ...options,
+      headers,
+      cache:"no-store"
+    });
+
+    let data = {};
+
+    try{
+      data = await response.json();
+    }catch{
+      data = {};
+    }
+
+    if(!response.ok){
+      throw new Error(
+        data?.error ||
+        `HTTP ${response.status}`
+      );
+    }
+
+    return data;
+  }
+
+  async function login(){
+    const t = $("adminToken").value.trim();
+
+    if(!t){
+      toast("Admin Token را وارد کنید");
+      return;
+    }
+
+    localStorage.setItem("zd_admin_token", t);
+
+    try{
+      await loadData();
+
+      $("authScreen").classList.add("hidden");
+      $("dashboard").classList.remove("hidden");
+
+      toast("ورود موفق بود");
+    }catch(error){
+      localStorage.removeItem("zd_admin_token");
+      toast("خطا: " + error.message);
+    }
+  }
+
+  function logout(){
+    localStorage.removeItem("zd_admin_token");
+    $("dashboard").classList.add("hidden");
+    $("authScreen").classList.remove("hidden");
+    $("adminToken").value = "";
+  }
+
+  async function loadData(){
+
+    if(!token()){
+      lockPanel();
+      return;
+    }
+
+    try{
+      const [keysData, devicesData] = await Promise.all([
+        api("/api/keys"),
+        api("/api/devices")
+      ]);
+
+      keys = normalizeKeys(keysData);
+      devices = normalizeDevices(devicesData);
+
+      renderStats();
+      renderKeys();
+      renderDevices();
+
+      $("authScreen").classList.add("hidden");
+      $("dashboard").classList.remove("hidden");
+
+    }catch(error){
+
+      if(
+        error.message.includes("unauthorized") ||
+        error.message.includes("401")
+      ){
+        localStorage.removeItem("zd_admin_token");
+        lockPanel("توکن نامعتبر است");
+        return;
+      }
+
+      toast("خطا در دریافت اطلاعات: " + error.message);
+    }
+  }
+
+  function renderStats(){
+
+    const active = keys.filter(k => isActive(k));
+
+    const totalSeats = keys.reduce(
+      (sum,k) => sum + Math.max(1, Number(k.seats || 1)),
+      0
+    );
+
+    $("statKeys").textContent = keys.length;
+    $("statActive").textContent = active.length;
+    $("statDevices").textContent = devices.length;
+    $("statSeats").textContent = totalSeats;
+  }
+
+  function statusBadge(key){
+
+    if(String(key.status).toLowerCase() === "revoked"){
+      return `<span class="status revoked">باطل‌شده</span>`;
+    }
+
+    if(
+      Number(key.expires_at || 0) === 0 &&
+      Number(key.activated_at || 0) === 0
+    ){
+      return `<span class="status active">شروع‌نشده</span>`;
+    }
+
+    if(Number(key.expires_at || 0) <= Date.now()){
+      return `<span class="status expired">منقضی</span>`;
+    }
+
+    return `<span class="status active">فعال</span>`;
+  }
+
+  function platformLabel(value){
+    const platform = String(value || "all").toLowerCase();
+
+    if(platform === "termux") return "فقط Termux";
+    if(platform === "other") return "به‌جز Termux";
+    return "همه";
+  }
+
+  function renderKeys(){
+
+    const list = $("keysList");
+    const query = $("searchInput").value.trim().toLowerCase();
+
+    const filtered = keys.filter(k =>
+      String(k.code).toLowerCase().includes(query)
+    );
+
+    if(!filtered.length){
+      list.innerHTML = `
+        <div class="empty">
+          هیچ کلیدی پیدا نشد.
+        </div>
+      `;
+      return;
+    }
+
+    list.innerHTML = filtered.map(k => {
+
+      const deviceCount = devices.filter(
+        d => Number(d.key_id) === Number(k.id)
+      ).length;
+
+      const deleteButton = `
+        <button
+          class="btn delete"
+          onclick="event.stopPropagation(); deleteKey(${k.id})"
+        >
+          <span class="btn-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M7 7l1 13h8l1-13"/><path d="M10 11v5M14 11v5"/></svg></span>
+          حذف
+        </button>
+      `;
+
+      return `
+        <div class="key-card">
+
+          <div class="key-main">
+            <span
+              class="key-code"
+              title="برای کپی کلیک کنید"
+              onclick="copyKey('${escapeJs(k.code)}')"
+            >
+              ${escapeHtml(k.code)}
+            </span>
+
+            <div class="key-meta">
+              ایجاد: ${escapeHtml(formatDate(k.created_at))}
+            </div>
+          </div>
+
+          <div>
+            <div class="mini">Seats</div>
+            <div class="key-meta">${k.seats}</div>
+          </div>
+
+          <div>
+            <div class="mini">دستگاه</div>
+            <div class="key-meta">${deviceCount}</div>
+          </div>
+
+          <div>
+            <div class="mini">پلتفرم</div>
+            <div class="key-meta">${escapeHtml(platformLabel(k.platform))}</div>
+          </div>
+
+          <div>
+            <div class="mini">باقی‌مانده</div>
+            <div class="key-meta">${escapeHtml(remainingTime(k.expires_at))}</div>
+          </div>
+
+          <div>
+            <div style="margin-bottom:8px">
+              ${statusBadge(k)}
+            </div>
+
+            <div class="key-actions">
+
+              <button
+                class="btn secondary"
+                onclick="showDetails(${k.id})"
+              >
+                <span class="btn-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6z"/><circle cx="12" cy="12" r="2.7"/></svg></span>
+                جزئیات
+              </button>
+
+              <button
+                class="btn secondary"
+                onclick="openEditModal(${k.id})"
+              >
+                <span class="btn-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4l10.6-10.6a2 2 0 0 0-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg></span>
+                ویرایش
+              </button>
+
+              ${
+                String(k.status).toLowerCase() === "active"
+                  ? `
+                    <button
+                      class="btn danger"
+                      onclick="revokeKey(${k.id})"
+                    >
+                      <span class="btn-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10l2 3-2 13H7L5 7z"/><path d="M9 10l6 6M15 10l-6 6"/></svg></span>
+                      باطل
+                    </button>
+                  `
+                  : ""
+              }
+
+              ${deleteButton}
+
+            </div>
+          </div>
+
+        </div>
+      `;
+    }).join("");
+  }
+
+  function renderDevices(){
+
+    const tbody = $("devicesList");
+
+    if(!devices.length){
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="6">
+            <div class="empty">هیچ دستگاهی ثبت نشده است.</div>
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    tbody.innerHTML = devices.map(d => {
+
+      const key = keys.find(
+        k => Number(k.id) === Number(d.key_id)
+      );
+
+      return `
+        <tr>
+
+          <td>
+            <div class="device-name">
+              ${escapeHtml(d.device_name)}
+            </div>
+
+            <div class="device-sub">
+              ID: ${d.id}
+            </div>
+          </td>
+
+          <td>
+            <span
+              class="key-code"
+              style="font-size:13px"
+              onclick="copyKey('${escapeJs(key?.code || d.key_code || "")}')"
+              title="برای کپی کلیک کنید"
+            >
+              ${escapeHtml(key?.code || d.key_code || "-")}
+            </span>
+          </td>
+
+          <td>
+            ${escapeHtml(d.platform)}
+          </td>
+
+          <td dir="ltr">
+            ${escapeHtml(d.ip)}
+          </td>
+
+          <td>
+            ${
+              d.banned
+                ? `<span class="status revoked">Ban</span>`
+                : `<span class="status active">Online</span>`
+            }
+          </td>
+
+          <td>
+            <button
+              class="btn ${d.banned ? "success" : "danger"}"
+              onclick="toggleBan(${d.id}, ${d.banned ? "false" : "true"})"
+            >
+              <span class="btn-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v5c0 5-3.3 8.3-8 10-4.7-1.7-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/></svg></span>
+              ${d.banned ? "Unban" : "Ban"}
+            </button>
+          </td>
+
+        </tr>
+      `;
+    }).join("");
+  }
+
+  function openCreateModal(){
+
+    editingId = null;
+
+    $("keyModalTitle").textContent = "ساخت کلید جدید";
+
+    $("keyCode").value = "";
+    $("seats").value = "1";
+    $("days").value = "30";
+    $("hours").value = "0";
+    $("minutes").value = "0";
+    $("platform").value = "all";
+    $("status").value = "active";
+    $("lowercaseMode").checked = true;
+
+    openModal("keyModal");
+
+    setTimeout(() => {
+      $("keyCode").focus();
+    }, 100);
+  }
+
+  function openEditModal(id){
+
+    const key = keys.find(k => Number(k.id) === Number(id));
+
+    if(!key){
+      toast("کلید پیدا نشد");
+      return;
+    }
+
+    editingId = id;
+
+    $("keyModalTitle").textContent = "ویرایش کلید";
+
+    $("keyCode").value = key.code;
+    $("seats").value = key.seats;
+    $("platform").value =
+      ["all", "termux", "other"].includes(String(key.platform).toLowerCase())
+        ? String(key.platform).toLowerCase()
+        : "all";
+    $("status").value =
+      String(key.status).toLowerCase() === "revoked"
+        ? "revoked"
+        : "active";
+
+    $("lowercaseMode").checked = true;
+
+    const pending =
+      Number(key.expires_at || 0) === 0 &&
+      Number(key.activated_at || 0) === 0;
+
+    const diff = Math.max(
+      60000,
+      pending
+        ? Number(key.duration_ms || 0)
+        : Number(key.expires_at || 0) - Date.now()
+    );
+
+    const days = Math.floor(diff / 86400000);
+    const hours = Math.floor(
+      (diff % 86400000) / 3600000
+    );
+    const minutes = Math.floor(
+      (diff % 3600000) / 60000
+    );
+
+    $("days").value = days;
+    $("hours").value = hours;
+    $("minutes").value = minutes;
+
+    openModal("keyModal");
+  }
+
+  async function saveKey(){
+
+    if(!token()){
+      return lockPanel("ابتدا وارد پنل شوید.");
+    }
+
+    let code = $("keyCode").value.trim();
+
+    if(!code){
+      toast("کد کلید را وارد کنید");
+      return;
+    }
+
+    /*
+      اگر حروف کوچک فعال باشد:
+      دقیقاً همان حالت واردشده حفظ می‌شود.
+
+      اگر خاموش باشد:
+      کلید به حروف بزرگ تبدیل می‌شود.
+    */
+    if(!$("lowercaseMode").checked){
+      code = code.toUpperCase();
+    }
+
+    code = code.replace(/\s+/g, "-");
+
+    const seats =
+      Math.max(
+        1,
+        parseInt($("seats").value || "1", 10)
+      );
+
+    const days =
+      Math.max(
+        0,
+        parseInt($("days").value || "0", 10)
+      );
+
+    const hours =
+      Math.max(
+        0,
+        parseInt($("hours").value || "0", 10)
+      );
+
+    const minutes =
+      Math.max(
+        0,
+        parseInt($("minutes").value || "0", 10)
+      );
+
+    const status = $("status").value === "revoked"
+      ? "revoked"
+      : "active";
+
+    if(days === 0 && hours === 0 && minutes === 0){
+      toast("مدت زمان کلید را وارد کنید");
+      return;
+    }
+
+    const body = {
+      code,
+      seats,
+      status,
+      days,
+      hours,
+      minutes,
+      platform: ["all", "termux", "other"].includes($("platform").value)
+        ? $("platform").value
+        : "all"
+    };
+
+    try{
+
+      if(editingId === null){
+
+        await api("/api/keys", {
+          method:"POST",
+          body:JSON.stringify(body)
+        });
+
+        toast("کلید با موفقیت ساخته شد");
+
+      }else{
+
+        await api(`/api/keys/${editingId}`, {
+          method:"PATCH",
+          body:JSON.stringify(body)
+        });
+
+        toast("کلید با موفقیت ویرایش شد");
+      }
+
+      closeModal("keyModal");
+
+      await loadData();
+
+    }catch(error){
+
+      toast("خطا: " + error.message);
+    }
+  }
+
+  async function revokeKey(id){
+
+    if(!token()){
+      return lockPanel("ابتدا وارد پنل شوید.");
+    }
+
+    const key = keys.find(
+      k => Number(k.id) === Number(id)
+    );
+
+    if(!key){
+      toast("کلید پیدا نشد");
+      return;
+    }
+
+    const shouldRevoke =
+      String(key.status).toLowerCase() !== "revoked";
+
+    const ok = confirm(
+      shouldRevoke
+        ? `کلید زیر باطل شود؟\n\n${key.code}`
+        : `کلید زیر دوباره فعال شود؟\n\n${key.code}`
+    );
+
+    if(!ok) return;
+
+    try{
+
+      await api(`/api/keys/${id}/revoke`, {
+        method:"POST",
+        body:JSON.stringify({
+          revoked: shouldRevoke
+        })
+      });
+
+      await loadData();
+
+      toast(
+        shouldRevoke
+          ? "کلید باطل شد"
+          : "کلید دوباره فعال شد"
+      );
+
+    }catch(error){
+
+      toast("خطا: " + error.message);
+    }
+  }
+
+  async function deleteKey(id){
+
+    if(!token()){
+      return lockPanel("ابتدا وارد پنل شوید.");
+    }
+
+    const key = keys.find(
+      k => Number(k.id) === Number(id)
+    );
+
+    if(!key){
+      toast("کلید پیدا نشد");
+      return;
+    }
+
+    const ok = confirm(
+      `آیا از حذف کامل این کلید مطمئن هستید؟\n\n${key.code}\n\nاین عملیات قابل بازگشت نیست.`
+    );
+
+    if(!ok) return;
+
+    try{
+
+      await api(`/api/keys/${id}`, {
+        method:"DELETE"
+      });
+
+      closeModal("detailModal");
+
+      await loadData();
+
+      toast("کلید با موفقیت حذف شد");
+
+    }catch(error){
+
+      toast("خطا در حذف کلید: " + error.message);
+    }
+  }
+
+  async function toggleBan(id, banned){
+
+    if(!token()){
+      return lockPanel("ابتدا وارد پنل شوید.");
+    }
+
+    try{
+
+      await api(`/api/devices/${id}`, {
+        method:"PATCH",
+        body:JSON.stringify({
+          banned: Boolean(banned)
+        })
+      });
+
+      await loadData();
+
+      toast(
+        banned
+          ? "دستگاه Ban شد"
+          : "دستگاه Unban شد"
+      );
+
+    }catch(error){
+
+      toast("خطا: " + error.message);
+    }
+  }
+
+  function showDetails(id){
+
+    const key = keys.find(
+      k => Number(k.id) === Number(id)
+    );
+
+    if(!key){
+      toast("کلید پیدا نشد");
+      return;
+    }
+
+    const linkedDevices = devices.filter(
+      d => Number(d.key_id) === Number(key.id)
+    );
+
+    let devicesHtml = "";
+
+    if(!linkedDevices.length){
+
+      devicesHtml = `
+        <div class="empty">
+          هنوز دستگاهی به این کلید متصل نشده است.
+        </div>
+      `;
+
+    }else{
+
+      devicesHtml = `
+        <div class="table-wrap">
+          <table>
+
+            <thead>
+              <tr>
+                <th>دستگاه</th>
+                <th>پلتفرم</th>
+                <th>IP</th>
+                <th>وضعیت</th>
+                <th>آخرین اتصال</th>
+                <th>عملیات</th>
+              </tr>
+            </thead>
+
+            <tbody>
+
+              ${linkedDevices.map(d => `
+                <tr>
+
+                  <td>
+                    <div class="device-name">
+                      ${escapeHtml(d.device_name)}
+                    </div>
+
+                    <div class="device-sub">
+                      ID: ${d.id}
+                    </div>
+                  </td>
+
+                  <td>
+                    ${escapeHtml(d.platform)}
+                  </td>
+
+                  <td dir="ltr">
+                    ${escapeHtml(d.ip)}
+                  </td>
+
+                  <td>
+                    ${
+                      d.banned
+                        ? `<span class="status revoked">Ban</span>`
+                        : `<span class="status active">فعال</span>`
+                    }
+                  </td>
+
+                  <td>
+                    ${escapeHtml(formatDate(d.connected_at))}
+                  </td>
+
+                  <td>
+                    <button
+                      class="btn ${d.banned ? "success" : "danger"}"
+                      onclick="toggleBan(${d.id}, ${d.banned ? "false" : "true"}); showDetails(${key.id})"
+                    >
+                      <span class="btn-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v5c0 5-3.3 8.3-8 10-4.7-1.7-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/></svg></span>
+                      ${d.banned ? "Unban" : "Ban"}
+                    </button>
+                  </td>
+
+                </tr>
+              `).join("")}
+
+            </tbody>
+
+          </table>
+        </div>
+      `;
+    }
+
+    $("detailContent").innerHTML = `
+
+      <div class="detail-grid">
+
+        <div class="detail-item">
+
+          <span>کد کلید</span>
+
+          <strong
+            class="key-code"
+            onclick="copyKey('${escapeJs(key.code)}')"
+            title="برای کپی کلیک کنید"
+          >
+            ${escapeHtml(key.code)}
+          </strong>
+
+        </div>
+
+        <div class="detail-item">
+          <span>وضعیت</span>
+          <strong>${statusBadge(key)}</strong>
+        </div>
+
+        <div class="detail-item">
+          <span>Seats</span>
+          <strong>${key.seats}</strong>
+        </div>
+
+        <div class="detail-item">
+          <span>پلتفرم مجاز</span>
+          <strong>${escapeHtml(platformLabel(key.platform))}</strong>
+        </div>
+
+        <div class="detail-item">
+          <span>دستگاه‌های متصل</span>
+          <strong>${linkedDevices.length}</strong>
+        </div>
+
+        <div class="detail-item">
+          <span>تاریخ ساخت</span>
+          <strong>${escapeHtml(formatDate(key.created_at))}</strong>
+        </div>
+
+        <div class="detail-item">
+          <span>وضعیت اعتبار</span>
+          <strong>${Number(key.expires_at || 0) === 0 && Number(key.activated_at || 0) === 0 ? "شروع پس از اولین استفاده" : escapeHtml(formatDate(key.expires_at))}</strong>
+        </div>
+
+      </div>
+
+      <div class="section-head">
+        <div>
+          <h2 style="font-size:16px">دستگاه‌های این کلید</h2>
+        </div>
+      </div>
+
+      ${devicesHtml}
+
+      <div class="modal-footer">
+
+        <button
+          class="btn secondary"
+          onclick="copyKey('${escapeJs(key.code)}')"
+        >
+          <span class="btn-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="11" height="11" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg></span>
+          کپی کلید
+        </button>
+
+        <button
+          class="btn secondary"
+          onclick="openEditModal(${key.id}); closeModal('detailModal')"
+        >
+          <span class="btn-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4l10.6-10.6a2 2 0 0 0-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg></span>
+          ویرایش
+        </button>
+
+        <button
+          class="btn delete"
+          onclick="deleteKey(${key.id})"
+        >
+          <span class="btn-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M7 7l1 13h8l1-13"/><path d="M10 11v5M14 11v5"/></svg></span>
+          حذف کامل کلید
+        </button>
+
+        <button
+          class="btn secondary"
+          onclick="closeModal('detailModal')"
+        >
+          <span class="btn-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg></span>
+          بستن
+        </button>
+
+      </div>
+    `;
+
+    openModal("detailModal");
+  }
+
+  async function copyKey(value){
+
+    if(!value){
+      toast("کدی برای کپی وجود ندارد");
+      return;
+    }
+
+    try{
+
+      await navigator.clipboard.writeText(value);
+
+      toast("کلید کپی شد");
+
+    }catch(error){
+
+      const textarea = document.createElement("textarea");
+
+      textarea.value = value;
+      textarea.style.position = "fixed";
+      textarea.style.opacity = "0";
+      textarea.style.pointerEvents = "none";
+
+      document.body.appendChild(textarea);
+
+      textarea.focus();
+      textarea.select();
+
+      try{
+        document.execCommand("copy");
+        toast("کلید کپی شد");
+      }catch{
+        toast("کپی خودکار انجام نشد");
+      }
+
+      textarea.remove();
+    }
+  }
+
+  function escapeJs(value){
+    return String(value ?? "")
+      .replace(/\\/g,"\\\\")
+      .replace(/'/g,"\\'")
+      .replace(/"/g,'\\"')
+      .replace(/\r/g,"\\r")
+      .replace(/\n/g,"\\n");
+  }
+
+  function openModal(id){
+    $(id).classList.add("show");
+  }
+
+  function closeModal(id){
+    $(id).classList.remove("show");
+  }
+
+  function toast(message){
+
+    const el = $("toast");
+
+    el.textContent = message;
+    el.classList.add("show");
+
+    clearTimeout(el._timer);
+
+    el._timer = setTimeout(() => {
+      el.classList.remove("show");
+    }, 2600);
+  }
+
+  /* بستن مودال با کلیک بیرون */
+  document.querySelectorAll(".modal").forEach(modal => {
+
+    modal.addEventListener("click", event => {
+
+      if(event.target === modal){
+        modal.classList.remove("show");
+      }
+
+    });
+
+  });
+
+  /* Enter برای ورود */
+  $("adminToken").addEventListener("keydown", event => {
+
+    if(event.key === "Enter"){
+      login();
+    }
+
+  });
+
+  /* بروزرسانی اتوماتیک */
+  setInterval(() => {
+
+    if(
+      token() &&
+      !$("dashboard").classList.contains("hidden")
+    ){
+      loadData();
+    }
+
+  }, 30000);
+
+
+  /* در صورت ذخیره قبلی توکن */
+  (async function boot(){
+
+    if(!token()){
+      $("authScreen").classList.remove("hidden");
+      $("dashboard").classList.add("hidden");
+      return;
+    }
+
+    try{
+
+      await loadData();
+
+    }catch{
+
+      localStorage.removeItem("zd_admin_token");
+
+      $("authScreen").classList.remove("hidden");
+      $("dashboard").classList.add("hidden");
+    }
+
+  })();
+
+</script>
+
+</body>
+</html>
